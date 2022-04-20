@@ -16,10 +16,7 @@ sublabels = dict(
         t45 = 0,
         t60 = 1
     ),
-    sub_ruler=dict(
-        r15=0,
-        r30=1
-    ),
+    sub_ruler=None,
     sub_gum=None,
     sub_pencil=dict(
         normal_empty=0,
@@ -29,7 +26,8 @@ sublabels = dict(
     ),
     sub_pen=dict(
         normal=0,
-        cap=1
+        cap=1,
+        backcap=3
     ),
     sub_none=dict(
         thing=0,

@@ -26,6 +26,7 @@ NAMES_ENG = \
     #Pen
     "normal" : "normal pen",
     "cap" : "with cap",
+    "backcap": "cap on back",
     #None
     "thing" : "thing",
     "background" : "background",
@@ -73,6 +74,7 @@ NAMES_PL = \
         # Pen
         "normal": "zwykłe pióro",
         "cap": "z zakrętką",
+        "backcap": "zakrętka z tyłu",
         # None
         "thing": "rzecz",
         "background": "tło",
