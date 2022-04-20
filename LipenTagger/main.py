@@ -176,11 +176,15 @@ class TaggerLayout(GridLayout):
         key1 = args[1]
         key3 = args[3]
         match (key1,key3):
-            case (None,32) | (None,13): #Space or Enter
+            case (32,_) | (13,_): #Space or Enter
                 button = self.next_button
+                button.do_on_press()
+                return
 
-            case (None,8): #Backspace
+            case (8,_): #Backspace
                 button = self.back_button
+                button.do_on_press()
+                return
 
             case (_,'1') | (_,'2') | (_,'3') | (_,'4') | (_,'5') | (_,'6') | (_,'7'):
                 button = self.label_buttons[int(key1)-48 - 1]
@@ -198,6 +202,7 @@ class TaggerLayout(GridLayout):
         if button is None: return
         button._do_press()
         button.on_press()
+
         button._do_release()
 
 class ChangeButton(Button):
