@@ -27,12 +27,11 @@ NAMES_ENG = \
     "normal" : "normal pen",
     "cap" : "with cap",
     #None
-    "thing" : "thing",
+    "thing" : "item/figure",
     "background" : "background",
 
     #Extra Labels
     "normal" : "normal",
-    "altered" : "altered",
     "broken" : "broken",
     "blurred" : "blurred",
     "dark" : "dark",
@@ -75,7 +74,7 @@ NAMES_PL = \
         "normal": "zwykłe pióro",
         "cap": "z zakrętką",
         # None
-        "thing": "rzecz",
+        "thing": "przedmiot/postać",
         "background": "tło",
 
         # Extra Labels
