@@ -32,7 +32,6 @@ NAMES_ENG = \
 
     #Extra Labels
     "normal" : "normal",
-    "altered" : "altered",
     "broken" : "broken",
     "blurred" : "blurred",
     "dark" : "dark",
@@ -69,8 +68,8 @@ NAMES_PL = \
         # Pencil
         "normal_empty": "duży bez gumki",
         "small_empty": "mały bez gumki",
-        "normal_gum": "mały z gumką",
-        "small_gum": "duży z gumką",
+        "normal_gum": "duży z gumką",
+        "small_gum": "mały z gumką",
         # Pen
         "normal": "zwykłe pióro",
         "cap": "z zakrętką",
