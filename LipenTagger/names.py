@@ -28,7 +28,7 @@ NAMES_ENG = \
     "cap" : "with cap",
     "backcap": "cap on back",
     #None
-    "thing" : "thing",
+    "thing" : "item/figure",
     "background" : "background",
 
     #Extra Labels
@@ -76,7 +76,7 @@ NAMES_PL = \
         "cap": "z zakrętką",
         "backcap": "zakrętka z tyłu",
         # None
-        "thing": "rzecz",
+        "thing": "przedmiot/postać",
         "background": "tło",
 
         # Extra Labels
