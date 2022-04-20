@@ -34,10 +34,7 @@ def main():
 class TaggerApp(App):
     def __init__(self):
         super(TaggerApp, self).__init__()
-        self.image_list = []
-        for file in os.listdir(IMAGES_PATH):
-            if os.path.isfile(os.path.join(IMAGES_PATH,file)) and file.lower().endswith((".jpg","jpeg","png")) :
-                self.image_list.append(file)
+        self.image_list = self.getFiles(IMAGES_PATH)
         self.image_amount = len(self.image_list)
         self.label_file = LabelFile(LABEL_FILE_PATH,self.image_amount)
         self.image_counter = self.label_file.getLineCount() - 1
@@ -46,6 +43,18 @@ class TaggerApp(App):
             exit(1)
         self.ui = None
         self.status = None
+
+    def getFiles(self,dir):
+        image_list = []
+        if dir[-1] != '/': dir = dir + '/'
+        for file in os.listdir(dir):
+            if os.path.isdir(os.path.join(dir, file)):
+                image_list.extend(self.getFiles(dir + file))
+            if os.path.isfile(os.path.join(dir, file)) and file.lower().endswith((".jpg", "jpeg", "png")):
+                if dir.split('/')[0] == IMAGES_PATH or dir.split('/')[0]+'/' == IMAGES_PATH:
+                    sdir = "/".join(dir.split('/')[1:]) # do not save image path to image name
+                image_list.append(str(sdir + file))
+        return image_list
 
     def build(self):
         self.ui = TaggerLayout(cols=3, rows=1)
