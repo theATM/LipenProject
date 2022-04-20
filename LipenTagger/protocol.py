@@ -39,7 +39,6 @@ sublabels = dict(
 )
 
 extralabels = dict(
-    altered = 1,
     broken = 2,
     blurred = 4,
     dark = 8,

@@ -80,12 +80,11 @@ NAMES_PL = \
 
         # Extra Labels
         "normal": "normalne",
-        "altered": "kombinowane",
-        "broken": "złamane",
+        "broken": "zniszczone",
         "blurred": "niewyraźne",
         "dark": "ciemne",
         "lamp": "lampa błyskowa",
-        "hard": "tródne",
+        "hard": "trudne",
 
         # other
         "next": "następny",
