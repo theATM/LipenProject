@@ -187,8 +187,9 @@ class TaggerLayout(GridLayout):
 
             case (_,'a') | (_,'s') | (_,'d') | (_,'f'):
                 index = ['a','s','d','f'].index(key3)
-                if len(self.sublabel_layout.children) <= index: return
-                button = self.sublabel_layout.children[index]
+                if not self.sublabel_layout.children: return
+                if len(self.sublabel_layout.children[0].children) <= index: return
+                button = self.sublabel_layout.children[0].children[-index-1]
 
             case (_,'z') | (_,'x') | (_,'c') | (_,'v') | (_,'b') | (_,'n'):
                 index = ['z' , 'x' , 'c' , 'v' , 'b' , 'n'].index(key3)
