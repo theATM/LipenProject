@@ -1,0 +1,14 @@
+#Tagger
+LipenTagger/litagvenv*
+LipenTagger/pictures/*
+LipenTagger/pictures*
+LipenTagger/__pycache__*
+LipenTagger/.idea*
+LipenTagger/LipenLabel.csv
+
+#LipenCompress
+LipenCompress/litcovenv*
+LipenCompress/inpictures/*
+LipenCompress/outpictures/*
+LipenCompress/.idea*
+LipenCompress/__pycache__*
