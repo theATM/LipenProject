@@ -1,48 +1,71 @@
 import os
+import random
 import time
 from PIL import Image , ImageOps
+import torchvision
 
-AUTHOR_TAG = 'atm' #SELECT YOUR OWN TAG  - MAX 3 DIGIT
+'''
+This script will help you compress images to 244 x 244
+And will rotate them randomly by n*90 degrees
+'''
+
+
 IN_IMAGES_PATH = "inpictures/" #Must be with '/' at the end
 OUT_IMAGES_PATH = "outpictures/" #Must be with '/' at the end
-RESIZE_SIZE = (432,432)
+RESIZE_SIZE = (244,244)
+
+class RandomRotationTransform:
+    """Rotate by one of the given angles."""
+
+    def __init__(self, angles):
+        self.angles = angles
+
+    def __call__(self, x):
+        angle = random.choice(self.angles)
+        return torchvision.transforms.functional.rotate(x, angle)
+
+
 
 
 def main():
-    #Check if imput is vaild
-    if AUTHOR_TAG == '' :
-        print("Dodaj tag autora")
-        return 1
+    print("Witaj w programie kompresującym i obracającym otagowane już zdjęcia")
+    #Check imput
     if not os.path.isdir(IN_IMAGES_PATH):
         print("Nie znaleziono filderu ze zdjęciami")
-        print("Utwórz folder \"" + IN_IMAGES_PATH[:-1]+ "\"")
+        print("Utwórz folder \"" + IN_IMAGES_PATH[:-1] + "\"")
         return 1
-    if IN_IMAGES_PATH[-1] != '/' or  OUT_IMAGES_PATH[-1] != '/':
+    if IN_IMAGES_PATH[-1] != '/' or OUT_IMAGES_PATH[-1] != '/':
         print("Dodaj znaki \/ na koniec nazw folderów ze zdjęciami")
         return 1
-    #Create out dir
+     # Create out dir
     if not os.path.isdir(OUT_IMAGES_PATH):
         os.mkdir(str(OUT_IMAGES_PATH))
-    #Get Images:
+
     image_list = getFiles(IN_IMAGES_PATH)
     image_amount = len(image_list)
     if image_amount == 0:
         print("Nie znaleziono żadnych zdjęć ")
         return 1
-    #Perform Computations:
+
+    # Perform Computations:
     for image in image_list:
         ti_m = os.path.getmtime(IN_IMAGES_PATH + image)
+        #Open
         pimage = Image.open(IN_IMAGES_PATH + image)
         pimage = ImageOps.exif_transpose(pimage)
-        #add author sufix
-        image = image[::-1].split('.')[-1][::-1] + "_" + str(AUTHOR_TAG) + "."+ image[::-1].split('.')[0][::-1]
+        #Rotate
+        resimg = my_Transform(pimage)
+        #Compress
         if pimage.size[0] > RESIZE_SIZE[0] and pimage.size[1] > RESIZE_SIZE[1]:
-            #Resize image
-            pimage = pimage.resize(RESIZE_SIZE)
-            pimage.save(OUT_IMAGES_PATH + image)
+            resimg = resimg.resize(RESIZE_SIZE)
+        #Save
+        resimg.save(OUT_IMAGES_PATH + image)
+        #Set old modification time
         os.utime(OUT_IMAGES_PATH + image,(ti_m,ti_m))
-    print("Added author tag")
-    print("Changed images resolution")
+
+    print("Koniec")
+
+
 
 
 
@@ -66,6 +89,14 @@ def getFiles(dir):
             image_list.append(str(sdir + file))
     return image_list
 
+
+
+
+
+#Here you can set up any transforms you wish:
+my_Transform = torchvision.transforms.Compose([
+    RandomRotationTransform(angles=[-90, 90, 0, 180, -180]),
+])
 
 
 
