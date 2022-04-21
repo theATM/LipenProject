@@ -39,8 +39,10 @@ def main():
         if pimage.size[0] > RESIZE_SIZE[0] and pimage.size[1] > RESIZE_SIZE[1]:
             #Resize image
             pimage = pimage.resize(RESIZE_SIZE)
+            #image = image.split('.')[0] + ".jpg" # To save as jpg
+            #pimage = pimage.convert('RGB')
             pimage.save(OUT_IMAGES_PATH + image)
-        os.utime(OUT_IMAGES_PATH + image,(ti_m,ti_m))
+            os.utime(OUT_IMAGES_PATH + image,(ti_m,ti_m))
     print("Added author tag")
     print("Changed images resolution")
 
@@ -52,9 +54,10 @@ def getFiles(dir):
 
     #Create subfolders
     if dir != IN_IMAGES_PATH and dir != IN_IMAGES_PATH[-1]:
-        if not os.path.isdir(OUT_IMAGES_PATH + dir):
-            if dir.split('/')[0] + '/' == IN_IMAGES_PATH:
-                sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
+        sdir = dir
+        if dir.split('/')[0] + '/' == IN_IMAGES_PATH:
+            sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
+        if not os.path.isdir(OUT_IMAGES_PATH + sdir):
             os.mkdir(OUT_IMAGES_PATH + sdir)
 
     for file in os.listdir(dir):

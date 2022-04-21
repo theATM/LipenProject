@@ -73,11 +73,12 @@ def getFiles(dir):
     image_list = []
     if dir[-1] != '/': dir = dir + '/'
 
-    #Create subfolders
+    # Create subfolders
     if dir != IN_IMAGES_PATH and dir != IN_IMAGES_PATH[-1]:
-        if not os.path.isdir(OUT_IMAGES_PATH + dir):
-            if dir.split('/')[0] + '/' == IN_IMAGES_PATH:
-                sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
+        sdir = dir
+        if dir.split('/')[0] + '/' == IN_IMAGES_PATH:
+            sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
+        if not os.path.isdir(OUT_IMAGES_PATH + sdir):
             os.mkdir(OUT_IMAGES_PATH + sdir)
 
     for file in os.listdir(dir):
