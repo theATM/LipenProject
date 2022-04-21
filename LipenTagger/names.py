@@ -24,7 +24,7 @@ NAMES_ENG = \
     "normal_gum" : "small, with rubber",
     "small_gum" : "normal, with rubber",
     #Pen
-    "normal" : "normal pen",
+    "normal" : "no cap",
     "cap" : "with cap",
     "backcap": "cap on back",
     #None
@@ -50,46 +50,46 @@ NAMES_ENG = \
 NAMES_PL = \
     {
         # classes
-        "triangle": "ekierka",
-        "ruler": "linijka",
-        "gum": "gumka",
-        "pencil": "ołówek",
-        "pen": "długopis",
-        "none": "coś innego",
-        "wrong" : "złe zdjęcie",
+        "triangle": "ekierka [1]",
+        "ruler": "linijka [2]",
+        "gum": "gumka [3]",
+        "pencil": "ołówek [4]",
+        "pen": "długopis [5]",
+        "none": "coś innego [6]",
+        "wrong" : "błędne zdjęcie [7]",
         # sub specialities
 
         # Sub Labels
         # Triangle
-        "t45": "90-45-45",
-        "t60": "90-60-30",
+        "t45": "90-45-45 [a]",
+        "t60": "90-60-30 [s]",
         # Ruler
-        "r15": "15 cm",
-        "r30": "30 cm",
+        "r15": "15 cm [a]",
+        "r30": "30 cm [s]",
         # Pencil
-        "normal_empty": "duży bez gumki",
-        "small_empty": "mały bez gumki",
-        "normal_gum": "duży z gumką",
-        "small_gum": "mały z gumką",
+        "normal_empty": "duży bez gumki [a]",
+        "small_empty": "mały bez gumki [s]",
+        "normal_gum": "duży z gumką [d]",
+        "small_gum": "mały z gumką [f]",
         # Pen
-        "normal": "zwykłe pióro",
-        "cap": "z zakrętką",
-        "backcap": "zakrętka z tyłu",
+        "normal_pen": "bez zakrętki [a]",
+        "cap": "z zakrętką [s]",
+        "backcap": "zakrętka z tyłu [d]",
         # None
-        "thing": "przedmiot/postać",
-        "background": "tło",
+        "thing": "przedmiot/postać [a]",
+        "background": "tło [s]",
 
         # Extra Labels
-        "normal": "normalne",
-        "broken": "zniszczone",
-        "blurred": "niewyraźne",
-        "dark": "ciemne",
-        "lamp": "lampa błyskowa",
-        "hard": "trudne",
+        "normal": "normalne [z]",
+        "broken": "zniszczone [x]",
+        "blurred": "niewyraźne [c]",
+        "dark": "ciemne [v]",
+        "lamp": "lampa błyskowa [b]",
+        "hard": "trudne [n]",
 
         # other
-        "next": "następny",
-        "back": "poprzedni",
+        "next": "następny [enter/space]",
+        "back": "poprzedni [backspace]",
         "status": "Zdjęcie:"
 
 

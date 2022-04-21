@@ -14,6 +14,7 @@ from kivy.uix.label import Label
 from kivy.core.window import Window
 
 import os
+import math
 import csv
 import re
 
@@ -29,6 +30,12 @@ LABEL_FILE_PATH = "LipenLabel.csv"
 def main():
     TaggerApp().run()
 
+def binary_decomposition(x):
+    p = 2 ** (int(x).bit_length() - 1)
+    while p:
+        if p & x:
+            yield p
+        p //= 2
 
 # the Base Class of our Kivy App
 class TaggerApp(App):
@@ -43,6 +50,7 @@ class TaggerApp(App):
             exit(1)
         self.ui = None
         self.status = None
+        Window.maximize()
 
     def getFiles(self,dir):
         image_list = []
@@ -68,12 +76,10 @@ class TaggerApp(App):
         #Check which if any button pressed
         pressed_button_index = None
         class_buttons_state = [button.selected for button in self.ui.label_buttons]
-        if True in  class_buttons_state:
+        if True in class_buttons_state:
             pressed_button_index = class_buttons_state.index(True)
-        elif direction is True:
-            return
         #Save IT!!
-        if direction is True:
+        if pressed_button_index is not None:
             if self.ui.sublabels_layout_list[pressed_button_index] is not None:
                 sublabel_state = [button.selected for button in self.ui.sublabels_layout_list[pressed_button_index].children]
                 if True not in sublabel_state: return
@@ -81,9 +87,9 @@ class TaggerApp(App):
             else:
                 pressed_sub_state_index = 0
             extralabel_state = [button.selected for button in self.ui.extralabels_list]
-            print(extralabel_state)
             extra_labels_code = sum([(list(pd.extralabels.values())[i] if x is True else 0) for i,x in enumerate(extralabel_state)])
             self.label_file.set_tag(self.image_list[self.image_counter],pressed_button_index,pressed_sub_state_index,extra_labels_code)
+        self.label_file.goto_line(direction)
 
         #Change current image
         image = ""
@@ -97,7 +103,6 @@ class TaggerApp(App):
             if self.image_counter > 0:
                 self.image_counter -= 1
                 image = self.image_list[self.image_counter]
-                self.label_file.back_line()
             else: return
         self.ui.changeImage(IMAGES_PATH + image)
         #Change status:
@@ -108,6 +113,27 @@ class TaggerApp(App):
             for button in self.ui.sublabels_layout_list[pressed_button_index].children : button.state = "normal"
         App.get_running_app().ui.sublabel_layout.clear_widgets()
         for button in self.ui.extralabels_list + self.ui.label_buttons: button.state = "normal"
+
+        #Set Buttons if already tagged
+        buttons_state = self.label_file.load_buttons_from_tag()
+        if buttons_state is not None:
+            class_button = self.ui.label_buttons[buttons_state[0]]
+            class_button._do_press()
+            class_button.on_press()
+            class_button._do_release()
+            if self.ui.sublabel_layout.children and len(self.ui.sublabel_layout.children[0].children) >= buttons_state[1]:
+                subclass_button = self.ui.sublabel_layout.children[0].children[buttons_state[1]]
+            else:
+                subclass_button = None
+            extra_class_buttons = []
+            for decomposed in binary_decomposition(buttons_state[2]):
+                index = int(math.log2(decomposed))
+                extra_class_buttons.append(self.ui.extralabels_list[index])
+            for button in [subclass_button] + extra_class_buttons:
+                if button:
+                    button._do_press()
+                    button.on_press()
+                    button._do_release()
 
 class TaggerLayout(GridLayout):
     def __init__(self, **var_args):
@@ -302,12 +328,10 @@ class LabelFile:
         if os.path.exists(self.file_path):
             with open(self.file_path, "r", encoding='utf-8') as file:
                 self.lines = file.readlines()
-            self.line_count = len(self.lines)
-            self.current_line_index = self.line_count
+            self.current_line_index = self.get_line_count()
         else:
             self.lines = []
             self.lines.append("Name;Label;Sublabel;Extra;Author\n")
-            self.line_count = 1
             self.current_line_index = 1
         self.changesBeforeSave = self.SAVE_DELAY
 
@@ -316,21 +340,28 @@ class LabelFile:
             file.writelines(self.lines)
 
     def get_line_count(self):
-        return self.line_count
+        return len(self.lines)
 
-    def back_line(self):
-        self.current_line_index -= 1
+    def goto_line(self, direction):
+        if direction is True and self.current_line_index < self.image_amount:
+            self.current_line_index += 1
+        elif direction is False and self.current_line_index > 1:
+            self.current_line_index -= 1
 
     def set_tag(self, img_name, label_index, sublabel_index, extralabel_code):
-        if self.current_line_index >= self.line_count:
+        if self.current_line_index >= self.get_line_count():
             self.lines.append("")
         author = ""
         if img_name[3] == '_':
             author = img_name[0:3]
         self.lines[self.current_line_index] = ';'.join((img_name, str(label_index),
                                                         str(sublabel_index), str(extralabel_code), author)) + "\n"
-        self.current_line_index += 1
         self.update_save_delay()
+
+    def load_buttons_from_tag(self):
+        if self.current_line_index < self.get_line_count():
+            tag_str = self.lines[self.current_line_index].split(';')
+            return int(tag_str[1]), int(tag_str[2]), int(tag_str[3])
 
     def update_save_delay(self):
         self.changesBeforeSave -= 1

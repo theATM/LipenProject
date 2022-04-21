@@ -25,7 +25,7 @@ sublabels = dict(
         small_gum=3
     ),
     sub_pen=dict(
-        normal=0,
+        normal_pen=0,
         cap=1,
         backcap=3
     ),
