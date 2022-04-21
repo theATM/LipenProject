@@ -37,7 +37,7 @@ class TaggerApp(App):
         self.image_list = self.getFiles(IMAGES_PATH)
         self.image_amount = len(self.image_list)
         self.label_file = LabelFile(LABEL_FILE_PATH,self.image_amount)
-        self.image_counter = self.label_file.getLineCount() - 1
+        self.image_counter = self.label_file.get_line_count() - 1
         if self.image_counter >= self.image_amount :
             print("All Images already tagged - or wrong csv file")
             exit(1)
@@ -70,10 +70,8 @@ class TaggerApp(App):
         class_buttons_state = [button.selected for button in self.ui.label_buttons]
         if True in  class_buttons_state:
             pressed_button_index = class_buttons_state.index(True)
-        else:
+        elif direction is True:
             return
-        #Clear Buttons
-        for button in self.ui.extralabels_list: button.state = "normal"
         #Save IT!!
         if direction is True:
             if self.ui.sublabels_layout_list[pressed_button_index] is not None:
@@ -83,8 +81,9 @@ class TaggerApp(App):
             else:
                 pressed_sub_state_index = 0
             extralabel_state = [button.selected for button in self.ui.extralabels_list]
+            print(extralabel_state)
             extra_labels_code = sum([(list(pd.extralabels.values())[i] if x is True else 0) for i,x in enumerate(extralabel_state)])
-            self.label_file.saveImg(self.image_list[self.image_counter],pressed_button_index,pressed_sub_state_index,extra_labels_code)
+            self.label_file.set_tag(self.image_list[self.image_counter],pressed_button_index,pressed_sub_state_index,extra_labels_code)
 
         #Change current image
         image = ""
@@ -98,13 +97,17 @@ class TaggerApp(App):
             if self.image_counter > 0:
                 self.image_counter -= 1
                 image = self.image_list[self.image_counter]
-                self.label_file.backLine()
+                self.label_file.back_line()
             else: return
         self.ui.changeImage(IMAGES_PATH + image)
         #Change status:
         self.ui.changeStatus(self.image_counter+1,self.image_amount)
 
-
+        #Clear Buttons
+        if pressed_button_index is not None and self.ui.sublabels_layout_list[pressed_button_index] is not None:
+            for button in self.ui.sublabels_layout_list[pressed_button_index].children : button.state = "normal"
+        App.get_running_app().ui.sublabel_layout.clear_widgets()
+        for button in self.ui.extralabels_list + self.ui.label_buttons: button.state = "normal"
 
 class TaggerLayout(GridLayout):
     def __init__(self, **var_args):
@@ -290,75 +293,53 @@ class ExtraLabelToggleButton(ToggleButton):
         if self.state == 'normal':
             self.selected = True
 
-
 class LabelFile:
+    SAVE_DELAY = 10
+
     def __init__(self, file_path, image_amount):
         self.file_path = file_path
-        self.file = None
-        self.neg_counter = 0
         self.image_amount = image_amount
         if os.path.exists(self.file_path):
-            self.file = open(self.file_path, "a+t", encoding='utf-8')
-            self.file.seek(0)
-            self.line_count = sum([1 for _ in enumerate(self.file)])
+            with open(self.file_path, "r", encoding='utf-8') as file:
+                self.lines = file.readlines()
+            self.line_count = len(self.lines)
+            self.current_line_index = self.line_count
         else:
-            self.file = open(self.file_path, "wt" , encoding='utf-8')
-            #write first descriptive line:
-            self.file.write("Name;Label;Sublabel;Extra;Author\n")
+            self.lines = []
+            self.lines.append("Name;Label;Sublabel;Extra;Author\n")
             self.line_count = 1
-        self.file.close()
+            self.current_line_index = 1
+        self.changesBeforeSave = self.SAVE_DELAY
 
-    def getLineCount(self):
+    def save_to_file(self):
+        with open(self.file_path, "w", encoding='utf-8') as file:
+            file.writelines(self.lines)
+
+    def get_line_count(self):
         return self.line_count
 
-    def saveImg(self,img,label_index,sublabel_index,extralabel_code):
-        if self.line_count  >= self.image_amount and self.neg_counter <= 0:
-            return
-        #decode
+    def back_line(self):
+        self.current_line_index -= 1
+
+    def set_tag(self, img_name, label_index, sublabel_index, extralabel_code):
+        if self.current_line_index >= self.line_count:
+            self.lines.append("")
         author = ""
-        if str(img)[3] == '_':
-            author = img[0:3]
-        save_string = str(img) + ";" + str(label_index) + ";" + str(sublabel_index) + ";" + str(extralabel_code) + ";" + str(author) + ";\n"
-        #save to file
-        if self.neg_counter > 0:
-            newlinebundle = self.findLastNewLine(self.neg_counter +1)
-            if newlinebundle is None:
-                self.neg_counter += 1
-                return
-            new_pos, _ = newlinebundle
-        with open(self.file_path, "r+t") as self.file:
-            self.file.seek(0, os.SEEK_END)
-            self.line_count += 1
-            if self.neg_counter > 0:
-                self.file.seek(new_pos, 0)
-                self.neg_counter-=1
-                self.line_count-=1
-            self.file.write(save_string)
+        if img_name[3] == '_':
+            author = img_name[0:3]
+        self.lines[self.current_line_index] = ';'.join((img_name, str(label_index),
+                                                        str(sublabel_index), str(extralabel_code), author)) + "\n"
+        self.current_line_index += 1
+        self.update_save_delay()
 
-
-
-    def backLine(self):
-        self.neg_counter+=1
-
-    def findLastNewLine(self,lines_back=1):
-        with open(self.file_path, "rb") as self.file:
-            self.file.seek(0,os.SEEK_END)
-            end_pos = self.file.tell()
-            try:
-                for _ in range(0,lines_back):
-                    self.file.seek(-2, os.SEEK_CUR)
-                    while self.file.read(1) != b'\n':
-                        self.file.seek(-2, os.SEEK_CUR)
-                last_pos = self.file.tell()
-            except OSError:
-                return None # catch OSError in case of a one line file
-            return (last_pos, end_pos)
-
+    def update_save_delay(self):
+        self.changesBeforeSave -= 1
+        if self.changesBeforeSave == 0:
+            self.save_to_file()
+            self.changesBeforeSave = self.SAVE_DELAY
 
     def __del__(self):
-        if self.file is not None:
-            self.file.close()
-            self.file = None
+        self.save_to_file()
 
 
 
