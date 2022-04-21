@@ -3,8 +3,8 @@ import time
 from PIL import Image , ImageOps
 
 AUTHOR_TAG = 'atm' #SELECT YOUR OWN TAG  - MAX 3 DIGIT
-IN_IMAGES_PATH = "inpictures/"
-OUT_IMAGES_PATH = "outpictures/"
+IN_IMAGES_PATH = "inpictures/" #Must be with '/' at the end
+OUT_IMAGES_PATH = "outpictures/" #Must be with '/' at the end
 RESIZE_SIZE = (432,432)
 
 
@@ -16,6 +16,9 @@ def main():
     if not os.path.isdir(IN_IMAGES_PATH):
         print("Nie znaleziono filderu ze zdjęciami")
         print("Utwórz folder \"" + IN_IMAGES_PATH[:-1]+ "\"")
+        return 1
+    if IN_IMAGES_PATH[-1] != '/' or  OUT_IMAGES_PATH[-1] != '/':
+        print("Dodaj znaki \/ na koniec nazw folderów ze zdjęciami")
         return 1
     #Create out dir
     if not os.path.isdir(OUT_IMAGES_PATH):
@@ -43,35 +46,22 @@ def main():
 
 
 
-def ListImages():
-    image_list = []
-    for file in os.listdir(IN_IMAGES_PATH):
-        if os.path.isfile(os.path.join(IN_IMAGES_PATH, file)) and file.lower().endswith((".jpg", "jpeg", "png")):
-            image_list.append(file)
-    return image_list
-
-
 def getFiles(dir):
     image_list = []
     if dir[-1] != '/': dir = dir + '/'
 
+    #Create subfolders
     if dir != IN_IMAGES_PATH and dir != IN_IMAGES_PATH[-1]:
-        if OUT_IMAGES_PATH[-1] == '/':
-            if not os.path.isdir(OUT_IMAGES_PATH + dir):
-                if dir.split('/')[0] == IN_IMAGES_PATH or dir.split('/')[0] + '/' == IN_IMAGES_PATH:
-                    sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
-                os.mkdir(OUT_IMAGES_PATH + sdir)
-        else:
-            if not os.path.isdir(OUT_IMAGES_PATH + '/' + dir):
-                if dir.split('/')[0] == IN_IMAGES_PATH or dir.split('/')[0] + '/' == IN_IMAGES_PATH:
-                    sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
-                os.mkdir(OUT_IMAGES_PATH + sdir)
+        if not os.path.isdir(OUT_IMAGES_PATH + dir):
+            if dir.split('/')[0] + '/' == IN_IMAGES_PATH:
+                sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
+            os.mkdir(OUT_IMAGES_PATH + sdir)
 
     for file in os.listdir(dir):
         if os.path.isdir(os.path.join(dir, file)):
             image_list.extend(getFiles(dir + file))
         if os.path.isfile(os.path.join(dir, file)) and file.lower().endswith((".jpg", "jpeg", "png")):
-            if dir.split('/')[0] == IN_IMAGES_PATH or dir.split('/')[0]+'/' == IN_IMAGES_PATH:
+            if dir.split('/')[0]+'/' == IN_IMAGES_PATH:
                 sdir = "/".join(dir.split('/')[1:]) # do not save image path to image name
             image_list.append(str(sdir + file))
     return image_list
