@@ -3,6 +3,7 @@ import random
 import time
 from PIL import Image , ImageOps
 import torchvision
+import utilities
 
 '''
 This script will help you compress images to 244 x 244
@@ -41,7 +42,7 @@ def main():
     if not os.path.isdir(OUT_IMAGES_PATH):
         os.mkdir(str(OUT_IMAGES_PATH))
 
-    image_list = getFiles(IN_IMAGES_PATH)
+    image_list = utilities.getFiles(IN_IMAGES_PATH,IN_IMAGES_PATH,OUT_IMAGES_PATH,True)
     image_amount = len(image_list)
     if image_amount == 0:
         print("Nie znaleziono żadnych zdjęć ")
@@ -68,27 +69,6 @@ def main():
 
 
 
-
-def getFiles(dir):
-    image_list = []
-    if dir[-1] != '/': dir = dir + '/'
-
-    # Create subfolders
-    if dir != IN_IMAGES_PATH and dir != IN_IMAGES_PATH[-1]:
-        sdir = dir
-        if dir.split('/')[0] + '/' == IN_IMAGES_PATH:
-            sdir = "/".join(dir.split('/')[1:])  # do not save image path to image name
-        if not os.path.isdir(OUT_IMAGES_PATH + sdir):
-            os.mkdir(OUT_IMAGES_PATH + sdir)
-
-    for file in os.listdir(dir):
-        if os.path.isdir(os.path.join(dir, file)):
-            image_list.extend(getFiles(dir + file))
-        if os.path.isfile(os.path.join(dir, file)) and file.lower().endswith((".jpg", "jpeg", "png")):
-            if dir.split('/')[0]+'/' == IN_IMAGES_PATH:
-                sdir = "/".join(dir.split('/')[1:]) # do not save image path to image name
-            image_list.append(str(sdir + file))
-    return image_list
 
 
 
