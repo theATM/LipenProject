@@ -94,7 +94,11 @@ class TaggerApp(App):
             extralabel_state = [button.selected for button in self.ui.extralabels_list]
             extra_labels_code = sum([(list(pd.extralabels.values())[i] if x is True else 0) for i,x in enumerate(extralabel_state)])
             self.label_file.set_tag(self.image_list[self.image_counter],pressed_button_index,pressed_sub_state_index,extra_labels_code)
-        self.label_file.goto_line(direction)
+            self.label_file.goto_line(direction)
+        elif direction is True:
+            return
+        else:
+            self.label_file.goto_line(direction)
 
         #Change current image
         image = ""
@@ -241,7 +245,7 @@ class TaggerLayout(GridLayout):
                 if len(self.sublabel_layout.children[0].children) <= index: return
                 button = self.sublabel_layout.children[0].children[-index-1]
 
-            case (_,'z') | (_,'x') | (_,'c') | (_,'v') | (_,'b') | (_,'n'):
+            case (_,'z') | (_,'x') | (_,'c') | (_,'v') | (_,'b'):
                 index = ['z' , 'x' , 'c' , 'v' , 'b' , 'n'].index(key3)
                 button = self.extralabels_list[index]
 

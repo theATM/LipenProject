@@ -80,12 +80,12 @@ NAMES_PL = \
         "background": "tło [s]",
 
         # Extra Labels
-        "normal": "normalne [z]",
-        "broken": "zniszczone [x]",
-        "blurred": "niewyraźne [c]",
-        "dark": "ciemne [v]",
-        "lamp": "lampa błyskowa [b]",
-        "hard": "trudne [n]",
+        "normal": "normalne",
+        "broken": "zniszczone [z]",
+        "blurred": "niewyraźne [x]",
+        "dark": "ciemne [c]",
+        "lamp": "lampa błyskowa [v]",
+        "hard": "trudne [b]",
 
         # other
         "next": "następny [enter/space]",
