@@ -34,8 +34,8 @@ def main():
 
 def binary_decomposition(x):
     p = 2 ** (int(x).bit_length() - 1)
-    while p:
-        if p & x:
+    while int(p):
+        if p & int(x):
             yield p
         p //= 2
 
