@@ -20,6 +20,7 @@ import re
 
 import protocol as pd
 import names as NM
+import random
 
 NAMES = NM.NAMES_PL
 
@@ -30,6 +31,7 @@ LABEL_FILE_PATH = "LipenLabel.csv"
 def main():
     TaggerApp().run()
 
+
 def binary_decomposition(x):
     p = 2 ** (int(x).bit_length() - 1)
     while p:
@@ -37,12 +39,15 @@ def binary_decomposition(x):
             yield p
         p //= 2
 
+
 # the Base Class of our Kivy App
 class TaggerApp(App):
     def __init__(self):
         super(TaggerApp, self).__init__()
         self.image_list = self.getFiles(IMAGES_PATH)
         self.image_amount = len(self.image_list)
+        random.seed(1525) #keep shuffle results the same every time
+        random.shuffle(self.image_list) # change images around  (same way every time)
         self.label_file = LabelFile(LABEL_FILE_PATH,self.image_amount)
         self.image_counter = self.label_file.get_line_count() - 1
         if self.image_counter >= self.image_amount :
@@ -50,7 +55,7 @@ class TaggerApp(App):
             exit(1)
         self.ui = None
         self.status = None
-        Window.maximize()
+        #Window.maximize() #breaks on linux
 
     def getFiles(self,dir):
         image_list = []
@@ -224,8 +229,11 @@ class TaggerLayout(GridLayout):
                 button.do_on_press()
                 return
 
-            case (_,'1') | (_,'2') | (_,'3') | (_,'4') | (_,'5') | (_,'6') | (_,'7'):
-                button = self.label_buttons[int(key1)-48 - 1]
+            case (_,'1') | (_,'2') | (_,'3') | (_,'4') | (_,'5') | (_,'6') | (_,'7'): #Number keys
+                button = self.label_buttons[int(key3) - 1]
+
+            case (257,_)| (258,_) | (259,_) | (260,_) | (261,_) | (262,_) | (263,_): # Numpad Keys
+                button = self.label_buttons[key1 - 257]
 
             case (_,'a') | (_,'s') | (_,'d') | (_,'f'):
                 index = ['a','s','d','f'].index(key3)
@@ -352,10 +360,10 @@ class LabelFile:
         if self.current_line_index >= self.get_line_count():
             self.lines.append("")
         author = ""
-        if img_name[3] == '_':
-            author = img_name[0:3]
+        if len(img_name.split("_")[-1].split(".")[0]) == 3: #There is an author tag in the image name
+            author = img_name.split("_")[-1].split(".")[0]
         self.lines[self.current_line_index] = ';'.join((img_name, str(label_index),
-                                                        str(sublabel_index), str(extralabel_code), author)) + "\n"
+                                                        str(sublabel_index), str(extralabel_code), author)) + ";\n"
         self.update_save_delay()
 
     def load_buttons_from_tag(self):
@@ -365,7 +373,7 @@ class LabelFile:
 
     def update_save_delay(self):
         self.changesBeforeSave -= 1
-        if self.changesBeforeSave == 0:
+        if self.changesBeforeSave == 0 or self.current_line_index >= self.image_amount:
             self.save_to_file()
             self.changesBeforeSave = self.SAVE_DELAY
 
