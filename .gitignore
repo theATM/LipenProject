@@ -12,3 +12,5 @@ LipenCompress/inpictures/*
 LipenCompress/outpictures/*
 LipenCompress/.idea*
 LipenCompress/__pycache__*
+
+resourses/*

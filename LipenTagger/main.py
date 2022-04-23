@@ -343,7 +343,7 @@ class LabelFile:
             self.current_line_index = self.get_line_count()
         else:
             self.lines = []
-            self.lines.append("Name;Label;Sublabel;Extra;Author\n")
+            self.lines.append("Name;Label;Sublabel;Extra;Author;\n")
             self.current_line_index = 1
         self.changesBeforeSave = self.SAVE_DELAY
 

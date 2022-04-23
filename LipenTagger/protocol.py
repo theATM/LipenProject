@@ -27,7 +27,7 @@ sublabels = dict(
     sub_pen=dict(
         normal_pen=0,
         cap=1,
-        backcap=3
+        backcap=2
     ),
     sub_none=dict(
         thing=0,
