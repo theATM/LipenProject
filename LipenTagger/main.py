@@ -328,8 +328,6 @@ class ExtraLabelToggleButton(ToggleButton):
 
     def _do_press(self):
         ToggleButton._do_press(self)
-        if self.state == 'normal':
-            self.selected = True
 
 class LabelFile:
     SAVE_DELAY = 10
