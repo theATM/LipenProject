@@ -86,7 +86,7 @@ class TaggerApp(App):
         #Save IT!!
         if pressed_button_index is not None:
             if self.ui.sublabels_layout_list[pressed_button_index] is not None:
-                sublabel_state = [button.selected for button in self.ui.sublabels_layout_list[pressed_button_index].children][::-1]
+                sublabel_state = [button.selected for button in self.ui.sublabels_layout_list[pressed_button_index].children]
                 if True not in sublabel_state: return
                 pressed_sub_state_index = sublabel_state.index(True)
             else:
