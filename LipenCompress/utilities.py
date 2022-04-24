@@ -32,3 +32,7 @@ def binary_decomposition(x):
         if p & int(x):
             yield p
         p //= 2
+
+
+
+
