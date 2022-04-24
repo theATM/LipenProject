@@ -14,3 +14,4 @@ LipenCompress/.idea*
 LipenCompress/__pycache__*
 
 resourses/*
+*.csv

@@ -23,3 +23,12 @@ def getFiles(dir,in_path,out_path,createdir=False):
             image_list.append(str(sdir + file))
 
     return image_list
+
+
+
+def binary_decomposition(x):
+    p = 2 ** (int(x).bit_length() - 1)
+    while int(p):
+        if p & int(x):
+            yield p
+        p //= 2

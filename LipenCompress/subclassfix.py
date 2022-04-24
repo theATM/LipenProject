@@ -1,7 +1,3 @@
-
-
-
-
 def main():
     with open("out_LipenLabel.csv","w",encoding='utf-8') as out_file:
         with open("LipenLabel.csv","r",encoding='utf-8') as file:
