@@ -1,8 +1,13 @@
 import os
+import shutil
 
 HARD_IN_PATH = "./hard_in/"
 ALL_IN_PATH = "./all.csv"
 CORRECTED_PATH = "./corrected.csv"
+REJECTED_PATH = "./rejected.csv"
+ALL_PHOTOS_PATH = "./all_photos/"
+REJECTED_PHOTOS_PATH = "./rejected_photos/"
+REJECTED_PHOTOS_FLAT_PATH = "./rejected_photos_flat/"
 
 hard_file_paths = [HARD_IN_PATH + hard_file_name for hard_file_name in os.listdir(HARD_IN_PATH)]
 hard_file_paths.sort()
@@ -85,66 +90,82 @@ def print_results():
         print(f"{class_names[class_no]}: {rejected[class_no]}")
     print("##################################################")
 
+for hard_file_no, hard_file_path in enumerate(hard_file_paths):
+    with open(hard_file_path, 'r') as hard_file:
+        lines = hard_file.readlines()
+        lines = lines[1:]
+        lines.sort()
+        for index, line in enumerate(lines):
+            file_path, class_no, subclass_no, extraclass_code, _, _ = line.split(';')
+            category = get_category(class_no, subclass_no)
+            fleiss_pj[category] += 1
+            fleiss_nij[index][category] += 1 
+            if file_path not in new_extraclass.keys():
+                new_extraclass[file_path] = 0
+            new_extraclass[file_path] |= int(extraclass_code)
+            if hard_file_no == 0:
+                hard_photo_paths.append(file_path)
+fleiss_pj = [pj / (fleiss_ratings_num * fleiss_samples_num) for pj in fleiss_pj]
+for i in range(0, fleiss_samples_num):
+    fleiss_Pi[i] = sum([fleiss_nij_ij * (fleiss_nij_ij - 1) for fleiss_nij_ij in fleiss_nij[i]])
+    fleiss_Pi[i] *= (1 / (fleiss_ratings_num * (fleiss_ratings_num - 1)))
+    max_category_votes = max(fleiss_nij[i])
+    max_voted_category = fleiss_nij[i].index(max_category_votes)
+    invalid_to_all_ratio = fleiss_nij[i][13] / fleiss_ratings_num
+    max_voted_class_subclass = get_class_subclass(max_voted_category)
+    max_to_all_ratio = max_category_votes / fleiss_ratings_num
+    
+    if max_to_all_ratio == 1.0:
+        perfect_agreement += 1
+    elif max_to_all_ratio >= 0.8:
+        great_agreement += 1
+    elif max_to_all_ratio > 0.5:
+        good_agreement += 1
+    elif max_to_all_ratio == 0.5:
+        half_agreement += 1
+    elif max_to_all_ratio >= 0.2:
+        slight_agreement += 1
+    else:
+        poor_agreement += 1
+    
+    if invalid_to_all_ratio > 0.3:
+        rejected[6].append(hard_photo_paths[i])
+    elif max_to_all_ratio < 0.5:
+        rejected[max_voted_class_subclass[0]].append(hard_photo_paths[i])
+    else:
+        new_class_subclass[hard_photo_paths[i]] = max_voted_class_subclass
+
 with open(ALL_IN_PATH, 'r') as all_in_file:
     with open(CORRECTED_PATH, 'w') as corrected_file:
-        for hard_file_no, hard_file_path in enumerate(hard_file_paths):
-            with open(hard_file_path, 'r') as hard_file:
-                lines = hard_file.readlines()
-                lines = lines[1:]
-                lines.sort()
-                for index, line in enumerate(lines):
-                    file_path, class_no, subclass_no, extraclass_code, _, _ = line.split(';')
-                    category = get_category(class_no, subclass_no)
-                    fleiss_pj[category] += 1
-                    fleiss_nij[index][category] += 1 
-                    if file_path not in new_extraclass.keys():
-                        new_extraclass[file_path] = 0
-                    new_extraclass[file_path] |= int(extraclass_code)
-                    if hard_file_no == 0:
-                        hard_photo_paths.append(file_path)
-        fleiss_pj = [pj / (fleiss_ratings_num * fleiss_samples_num) for pj in fleiss_pj]
-        for i in range(0, fleiss_samples_num):
-            fleiss_Pi[i] = sum([fleiss_nij_ij * (fleiss_nij_ij - 1) for fleiss_nij_ij in fleiss_nij[i]])
-            fleiss_Pi[i] *= (1 / (fleiss_ratings_num * (fleiss_ratings_num - 1)))
-            max_category_votes = max(fleiss_nij[i])
-            max_voted_category = fleiss_nij[i].index(max_category_votes)
-            max_voted_class_subclass = get_class_subclass(max_voted_category)
-            max_to_all_ratio = max_category_votes / fleiss_ratings_num
-            if max_to_all_ratio == 1.0:
-                perfect_agreement += 1
-            elif max_to_all_ratio >= 0.8:
-                great_agreement += 1
-            elif max_to_all_ratio > 0.5:
-                good_agreement += 1
-            elif max_to_all_ratio == 0.5:
-                half_agreement += 1
-            elif max_to_all_ratio >= 0.2:
-                slight_agreement += 1
-            else:
-                poor_agreement += 1
-            if max_to_all_ratio < 0.5:
-                rejected[max_voted_class_subclass[0]].append(hard_photo_paths[i])
-            else:
-                new_class_subclass[hard_photo_paths[i]] = max_voted_class_subclass
-        fleiss_P_ = sum(fleiss_Pi) / fleiss_samples_num
-        fleiss_Pe_ = sum([pj ** 2 for pj in fleiss_pj])
-        fleiss_K = (fleiss_P_ - fleiss_Pe_) / (1- fleiss_Pe_)
-        print("Fleiss Kappa: " + str(fleiss_K))
-        print_results()
-        all_file_lines = all_in_file.readlines()
-        corrected_file.write(all_file_lines[0])
-        rejected_flattened = []
-        for rejected_x in rejected:
-            rejected_flattened += rejected_x
-        non_changed = 0
-        changed = 0
-        for all_file_line in all_file_lines[1:]:
-            file_path, _, _, _, author, _ = all_file_line.split(';')
-            if file_path in hard_photo_paths:
-                if file_path not in rejected_flattened:
-                    corrected_line_new = ';'.join((file_path, str(new_class_subclass[file_path][0]), str(new_class_subclass[file_path][1]), 
-                                                  str(new_extraclass[file_path]), author)) + ";CHANGEEEEEEED\n"
-                    corrected_file.write(corrected_line_new)
-            else:
-                corrected_file.write(all_file_line)
+        with open(REJECTED_PATH, 'w') as rejected_file:
+            os.makedirs(REJECTED_PHOTOS_FLAT_PATH)
+            fleiss_P_ = sum(fleiss_Pi) / fleiss_samples_num
+            fleiss_Pe_ = sum([pj ** 2 for pj in fleiss_pj])
+            fleiss_K = (fleiss_P_ - fleiss_Pe_) / (1- fleiss_Pe_)
+            print("Fleiss Kappa: " + str(fleiss_K))
+            print_results()
+            all_file_lines = all_in_file.readlines()
+            corrected_file.write(all_file_lines[0])
+            rejected_flattened = []
+            for rejected_x in rejected:
+                rejected_flattened += rejected_x
+            non_changed = 0
+            changed = 0
+            for all_file_line in all_file_lines[1:]:
+                file_path, _, _, _, author, _ = all_file_line.split(';')
+                if file_path in hard_photo_paths:
+                    if file_path in rejected_flattened:
+                        rejected_file.write(file_path + "\n")
+                        rejected_photo_path = REJECTED_PHOTOS_PATH + file_path
+                        rejected_photo_dir = os.path.dirname(rejected_photo_path)
+                        if not os.path.exists(rejected_photo_dir):
+                            os.makedirs(rejected_photo_dir)
+                        os.replace(ALL_PHOTOS_PATH + file_path, rejected_photo_path)
+                        shutil.copy(rejected_photo_path, REJECTED_PHOTOS_FLAT_PATH + os.path.basename(rejected_photo_path))
+                    else:
+                        corrected_line_new = ';'.join((file_path, str(new_class_subclass[file_path][0]), str(new_class_subclass[file_path][1]), 
+                                                      str(new_extraclass[file_path]), author)) + ";\n"
+                        corrected_file.write(corrected_line_new)
+                else:
+                    corrected_file.write(all_file_line)
                 
