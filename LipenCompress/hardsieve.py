@@ -6,8 +6,8 @@ import shutil
 IN_PICTURES_PATH = "inpictures/"
 OUT_PICTURES_PATH = "outpictures/"
 
-IN_CSV = "LipenLabelAtm2n3True.csv"
-OUT_CSV = "LLATM2n3Hard.csv"
+IN_CSV = "JulLipenLabel1n3.csv"
+OUT_CSV = "JulLipenLabel1n3Hard.csv"
 
 
 def main():
