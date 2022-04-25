@@ -116,22 +116,36 @@ def main():
         pimage = ImageOps.exif_transpose(pimage)
 
         sub_img = my_Transform(pimage)
+        img_normalized = np.array(sub_img)
+        img_normalized = img_normalized.transpose(1, 2, 0)
+        plt.imshow(img_normalized)
+        plt.show()
+        img_normalized = img_normalized
+        img_normalized = img_normalized.astype(np.uint8)
+        sub_img = Image.fromarray(img_normalized )
+
+        #plt.xticks([])
+        #plt.yticks([])
+
+        #images_np = sub_img.numpy()
+        #img_plt = images_np.transpose(0, 2, 3, 1)
+        # display 5th image from dataset
+        #plt.imshow(img_plt[4])
 
 
-        '''
         # Rotate
-        resimg = my_Transform(pimage)
+        #resimg = my_Transform(pimage)
         # Compress
-        if pimage.size[0] > RESIZE_SIZE[0] and pimage.size[1] > RESIZE_SIZE[1]:
-            resimg = resimg.resize(RESIZE_SIZE)
-        '''
+        #if pimage.size[0] > RESIZE_SIZE[0] and pimage.size[1] > RESIZE_SIZE[1]:
+        #    resimg = resimg.resize(RESIZE_SIZE)
+
         # Save
         sub_img.save(OUT_IMAGES_PATH + image)
         # Set old modification time
         os.utime(OUT_IMAGES_PATH + image, (ti_m, ti_m))
-    sub_imgs = [my_Transform(pimage) for _ in range(4)]
-    plot(pimage, sub_imgs)
-    print("Koniec")
+    #sub_imgs = [my_Transform(pimage) for _ in range(4)]
+    #plot(pimage, sub_imgs)
+    #print("Koniec")
 
 
 def calculateMeanStd():
@@ -151,7 +165,9 @@ def calculateMeanStd():
     MEAN = mean.tolist()
     STD = std.tolist()
     return MEAN, STD
-
+    #Train set:
+    #[0.5049, 0.4650, 0.4300]
+    #[0.1872, 0.1798, 0.1829]
 
 def fun():
     return calculateMeanStd()[0]
@@ -162,26 +178,26 @@ def fun2():
 
 
 my_Transform = T.Compose([
-    #T.Resize(RESIZE_SIZE),
+    #T.Resize(RESIZE_  SIZE),
     #T.RandomVerticalFlip(p=0.3),
     #T.RandomInvert(p=0.1),
     #T.RandomHorizontalFlip(p=0.3),
     #T.RandomEqualize(p=0.),
     T.transforms.ToTensor(),
-    T.Normalize(mean=fun(),
-                std=fun2()),
+    T.Normalize(mean=[0.485, 0.456, 0.406],#[0.5049, 0.4650, 0.4300], #[0.5125,0.4667,0.4110], #[0.5049, 0.4650, 0.4300],
+                std=[0.229, 0.224, 0.225]),#[0.1872, 0.1798, 0.1829]), #[0.2621,0.2501,0.2453]), #[0.1872, 0.1798, 0.1829]),
 
     #T.transforms.RandomApply(
     #        [AddGaussianNoise(0., 0.01)],
     #        p=0.
     #    ),
     #T.transforms.GaussianBlur((5,9),(1,5)),
-    T.transforms.ToPILImage(),
+    #T.transforms.ToPILImage(),
 
     #T.RandomGrayscale(p=0.1),
-    T.transforms.RandomApply(
-        [T.RandomRotation(degrees=(0, 360))],p=0.5
-    )
+    #T.transforms.RandomApply(
+    #    [T.RandomRotation(degrees=(0, 360))],p=0.5
+    #)
 
 
 ])
