@@ -11,7 +11,7 @@ EVAL_PATH = "eval"
 TEST_PATH = "test"
 ANY_PATH = "any"
 
-label_CSV = "AllImgCorrected.csv"
+label_CSV = "AugmentedDatasetLabel.csv"
 
 
 Author_order = {"jlk": 0 ,"nmz": 1 , "atm": 2}

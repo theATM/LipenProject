@@ -16,8 +16,10 @@ RESIZE_SIZE = (244,244)
 
 MEAN = []
 STD = []
-torch.manual_seed(1525)
+torch.manual_seed(1525)#int(random.random()*100 * random.random()))
 
+
+NEW_IMAGE_CREATION_MODE = False
 
 class RandomRotationTransform:
     """Rotate by one of the given angles."""
@@ -87,6 +89,8 @@ def plot(sour_img, imgs):
 
 
 def main():
+    calculateMeanStd()
+    return
     print("Witaj w programie augmentującym otagowane już zdjęcia")
     # Check imput
     if not os.path.isdir(IN_IMAGES_PATH):
@@ -106,47 +110,72 @@ def main():
         print("Nie znaleziono żadnych zdjęć ")
         return 1
 
+    if NEW_IMAGE_CREATION_MODE is False:
 
+        # Perform Computations:
+        for image in image_list:
+            ti_m = os.path.getmtime(IN_IMAGES_PATH + image)
+            # Open
+            pimage = Image.open(IN_IMAGES_PATH + image)
+            pimage = ImageOps.exif_transpose(pimage)
 
-    # Perform Computations:
-    for image in image_list:
-        ti_m = os.path.getmtime(IN_IMAGES_PATH + image)
-        # Open
-        pimage = Image.open(IN_IMAGES_PATH + image)
-        pimage = ImageOps.exif_transpose(pimage)
+            sub_img = my_Transform(pimage)
+            '''
+            #img_normalized = np.array(sub_img)
+            #img_normalized = img_normalized.transpose(1, 2, 0)
+            #plt.imshow(img_normalized)
+            #plt.show()
+            #img_normalized = img_normalized
+            #img_normalized = img_normalized.astype(np.uint8)
+            #sub_img = Image.fromarray(img_normalized )
+            #plt.xticks([])
+            #plt.yticks([])
+            #images_np = sub_img.numpy()
+            #img_plt = images_np.transpose(0, 2, 3, 1)
+            # display 5th image from dataset
+            #plt.imshow(img_plt[4])
+            # Rotate
+            #resimg = my_Transform(pimage)
+            # Compress
+            #if pimage.size[0] > RESIZE_SIZE[0] and pimage.size[1] > RESIZE_SIZE[1]:
+            #    resimg = resimg.resize(RESIZE_SIZE)
+            '''
+            # Save
+            sub_img.save(OUT_IMAGES_PATH + image)
+            # Set old modification time
+            os.utime(OUT_IMAGES_PATH + image, (ti_m, ti_m))
+            #sub_imgs = [my_Transform(pimage) for _ in range(4)]
+            #plot(pimage, sub_imgs)
+        print("Koniec")
 
-        sub_img = my_Transform(pimage)
-        img_normalized = np.array(sub_img)
-        img_normalized = img_normalized.transpose(1, 2, 0)
-        plt.imshow(img_normalized)
-        plt.show()
-        img_normalized = img_normalized
-        img_normalized = img_normalized.astype(np.uint8)
-        sub_img = Image.fromarray(img_normalized )
+    else:
+        with open("out_LipenLabel.csv", "w", encoding='utf-8') as out_file:
+            for image in image_list:
+                with open("CleanDatasetLabel.csv", "r", encoding='utf-8') as file:
+                    for label in file:
+                        name = label.split(";")[0]
+                        if name == "\n": continue
+                        if name == "Name": continue
+                        if name != image: continue
 
-        #plt.xticks([])
-        #plt.yticks([])
-
-        #images_np = sub_img.numpy()
-        #img_plt = images_np.transpose(0, 2, 3, 1)
-        # display 5th image from dataset
-        #plt.imshow(img_plt[4])
-
-
-        # Rotate
-        #resimg = my_Transform(pimage)
-        # Compress
-        #if pimage.size[0] > RESIZE_SIZE[0] and pimage.size[1] > RESIZE_SIZE[1]:
-        #    resimg = resimg.resize(RESIZE_SIZE)
-
-        # Save
-        sub_img.save(OUT_IMAGES_PATH + image)
-        # Set old modification time
-        os.utime(OUT_IMAGES_PATH + image, (ti_m, ti_m))
-    #sub_imgs = [my_Transform(pimage) for _ in range(4)]
-    #plot(pimage, sub_imgs)
-    #print("Koniec")
-
+                        # image matching with label:
+                        tag = label.split(";")[1]
+                        subclass = label.split(";")[2]
+                        extra = label.split(";")[3]
+                        author = label.split(";")[4]
+                        ending = "\n"
+                        ti_m = os.path.getmtime(IN_IMAGES_PATH + image)
+                        pimage = Image.open(IN_IMAGES_PATH + image)
+                        pimage = ImageOps.exif_transpose(pimage)
+                        sub_imgs = [my_Transform(pimage) for _ in range(1)]
+                        for i,sub_img in enumerate(sub_imgs):
+                            # Save
+                            path = image.split(".")[0]+"_"+str(i)+"."+image.split(".")[1] #works if path does not have "." inside
+                            sub_img.save(OUT_IMAGES_PATH + path)
+                            # Set old modification time
+                            os.utime(OUT_IMAGES_PATH + path, (ti_m, ti_m))
+                            newline = ";".join([path, tag, subclass, extra, author, ending])
+                            out_file.write(newline)
 
 def calculateMeanStd():
     # calcuate means and stds:
@@ -169,6 +198,16 @@ def calculateMeanStd():
     #[0.5049, 0.4650, 0.4300]
     #[0.1872, 0.1798, 0.1829]
 
+
+    #Merged Set:
+    #mean = tensor([0.5076, 0.4680, 0.4326])
+    #std = tensor([0.1844, 0.1776, 0.1801])
+
+    #Other:
+    # ([0.4784, 0.4712, 0.4662])
+    # ([0.2442, 0.2469, 0.2409])
+
+
 def fun():
     return calculateMeanStd()[0]
 
@@ -178,26 +217,33 @@ def fun2():
 
 
 my_Transform = T.Compose([
-    #T.Resize(RESIZE_  SIZE),
-    #T.RandomVerticalFlip(p=0.3),
-    #T.RandomInvert(p=0.1),
-    #T.RandomHorizontalFlip(p=0.3),
-    #T.RandomEqualize(p=0.),
+    T.Resize(RESIZE_SIZE),  ## 244p
+    T.RandomVerticalFlip(p=0.3),
+    T.RandomHorizontalFlip(p=0.3),
+    T.transforms.RandomApply(
+        [T.transforms.ColorJitter(brightness=(0.9, 1), contrast=(0.5, 1), saturation=(0.5, 1), hue=(-0.5, 0.5))],
+        p=0.5),
     T.transforms.ToTensor(),
-    T.Normalize(mean=[0.485, 0.456, 0.406],#[0.5049, 0.4650, 0.4300], #[0.5125,0.4667,0.4110], #[0.5049, 0.4650, 0.4300],
-                std=[0.229, 0.224, 0.225]),#[0.1872, 0.1798, 0.1829]), #[0.2621,0.2501,0.2453]), #[0.1872, 0.1798, 0.1829]),
 
-    #T.transforms.RandomApply(
-    #        [AddGaussianNoise(0., 0.01)],
-    #        p=0.
-    #    ),
-    #T.transforms.GaussianBlur((5,9),(1,5)),
-    #T.transforms.ToPILImage(),
+    T.Normalize(mean=[0.4784, 0.4712, 0.4662],
+                std=[0.2442, 0.2469, 0.2409]),
+    T.transforms.RandomApply(
+            [AddGaussianNoise(0., 0.01)],
+            p=0.41
+        ),
+    T.transforms.RandomApply(
+        [T.transforms.GaussianBlur((1,9),(0.1,7))],
+        p = 0.3),
 
-    #T.RandomGrayscale(p=0.1),
-    #T.transforms.RandomApply(
-    #    [T.RandomRotation(degrees=(0, 360))],p=0.5
-    #)
+    T.transforms.ToPILImage(),
+
+    T.RandomInvert(p=0.1),
+    T.RandomEqualize(p=0.3),
+    T.RandomGrayscale(p=0.1),
+    T.transforms.RandomApply(
+        [T.RandomRotation(degrees=(0, 360))],p=0.5
+
+    )
 
 
 ])
