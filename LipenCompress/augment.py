@@ -1,4 +1,4 @@
-from PIL import Image, ImageStat, ImageOps
+from PIL import Image, ImageStat, ImageOps, ImageEnhance
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 import random
 import os
 import utilities
+import random
 
 IN_IMAGES_PATH = "inpictures/" #Must be with '/' at the end
 OUT_IMAGES_PATH = "outpictures/" #Must be with '/' at the end
@@ -16,10 +17,14 @@ RESIZE_SIZE = (244,244)
 MEAN = []
 STD = []
 
-torch.manual_seed(1525)#int(random.random()*100 * random.random()))
+RANDOM_SEED = True
+
+seed = int(random.random()*100 * random.random()) if RANDOM_SEED else 1525
+
+torch.manual_seed(seed)
 
 
-NEW_IMAGE_CREATION_MODE = True
+NEW_IMAGE_CREATION_MODE = False
 
 class RandomRotationTransform:
     """Rotate by one of the given angles."""
@@ -32,6 +37,7 @@ class RandomRotationTransform:
         return T.functional.rotate(x, angle)
 
 
+
 class AddGaussianNoise(object): #this is dangerous do not use!!!
     def __init__(self, mean=0., std=0.1):
         self.std = std
@@ -42,6 +48,7 @@ class AddGaussianNoise(object): #this is dangerous do not use!!!
 
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
 
 class MyDataset(Dataset):
   def __init__(self, imgpath_list):
@@ -56,6 +63,31 @@ class MyDataset(Dataset):
   def __getitem__(self, idx):
     img = self.img_list[idx]
     return self.img
+
+
+class EnhanceBrightness(object): #Karol's work
+    '''This is custom transform class
+        It creates bright circle in the center of image
+        when initializing you can set
+        brightness - float value determine minimal brightness would be product image, should be in <0, 1) <- dimmer <1 , max_bright) <- lighter
+        probability - float value (0,1> determines the logically of preforming the transformation
+        max_bright - float value (not smaller than bright) maximal brightness of the product image
+        when you call it for specific picture it performs call method. Original design Karol Dziki, altered by ATM'''
+
+    def __init__(self, bright :float = 2.5,  max_bright: float = 3.0, probability : float = 1.0):
+        if bright < 0 : return 1
+        if max_bright < bright : return 1
+        self.max_bright :float = max_bright
+        self.bright : float = bright
+        self.probability : float =  probability
+
+    def __call__(self, img):
+        fate = random.random() #rand number from (0,1>
+        fate_bright = random.random() * abs(self.max_bright - self.bright)  + self.bright # rand number from (0,1>
+        if fate <= self.probability:
+            return ImageEnhance.Brightness(img).enhance(fate_bright)
+        else:
+            return img # do nothing
 
 
 
@@ -142,14 +174,14 @@ def main():
             sub_img.save(OUT_IMAGES_PATH + image)
             # Set old modification time
             os.utime(OUT_IMAGES_PATH + image, (ti_m, ti_m))
-            #sub_imgs = [my_Transform(pimage) for _ in range(4)]
-            #plot(pimage, sub_imgs)
+            sub_imgs = [my_Transform(pimage) for _ in range(4)]
+            plot(pimage, sub_imgs)
         print("Koniec")
 
     else:
         with open("out_LipenLabel.csv", "w", encoding='utf-8') as out_file:
             for image in image_list:
-                with open("CleanDatasetLabel.csv", "r", encoding='utf-8') as file:
+                with open("UniformDatasetLabel.csv", "r", encoding='utf-8') as file:
                     for label in file:
                         name = label.split(";")[0]
                         if name == "\n": continue
@@ -181,6 +213,7 @@ def main():
 
 my_Transform = T.Compose([
     T.Resize(RESIZE_SIZE),  ## 244p
+
     T.RandomVerticalFlip(p=0.3),
     T.RandomHorizontalFlip(p=0.3),
     T.transforms.RandomApply(
@@ -195,18 +228,20 @@ my_Transform = T.Compose([
             p=0.41
         ),
     T.transforms.RandomApply(
-        [T.transforms.GaussianBlur((1,9),(0.1,5.5))],
+        [T.transforms.GaussianBlur((1,9),(0.1,5))],
         p = 0.3),
 
     T.transforms.ToPILImage(),
-
+    EnhanceBrightness(bright=1.1,max_bright=1.6,probability=0.2),
     T.RandomInvert(p=0.1),
     T.RandomEqualize(p=0.3),
     T.RandomGrayscale(p=0.1),
     T.transforms.RandomApply(
-        [T.RandomRotation(degrees=(0, 360))],p=0.5
+        [T.RandomRotation(degrees=(0, 360))], p=0.5
+    ),
 
-    )
+
+
 
 
 ])
