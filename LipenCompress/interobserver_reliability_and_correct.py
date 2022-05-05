@@ -142,19 +142,18 @@ with open(ALL_IN_PATH, 'r') as all_in_file:
             fleiss_P_ = sum(fleiss_Pi) / fleiss_samples_num
             fleiss_Pe_ = sum([pj ** 2 for pj in fleiss_pj])
             fleiss_K = (fleiss_P_ - fleiss_Pe_) / (1- fleiss_Pe_)
-            print("Fleiss Kappa: " + str(fleiss_K))
-            print_results()
             all_file_lines = all_in_file.readlines()
-            corrected_file.write(all_file_lines[0])
+            corrected_file.write(all_file_lines[0][:-1] + "Corrected;\n")
             rejected_flattened = []
             for rejected_x in rejected:
                 rejected_flattened += rejected_x
             non_changed = 0
             changed = 0
             for all_file_line in all_file_lines[1:]:
-                file_path, _, _, _, author, _ = all_file_line.split(';')
-                if file_path in hard_photo_paths:
-                    if file_path in rejected_flattened:
+                file_path, class_no, _, _, author, _ = all_file_line.split(';')
+                class_no = int(class_no)
+                if file_path in hard_photo_paths or class_no == 6:
+                    if file_path in rejected_flattened or class_no == 6:
                         rejected_file.write(file_path + "\n")
                         rejected_photo_path = REJECTED_PHOTOS_PATH + file_path
                         rejected_photo_dir = os.path.dirname(rejected_photo_path)
@@ -162,10 +161,17 @@ with open(ALL_IN_PATH, 'r') as all_in_file:
                             os.makedirs(rejected_photo_dir)
                         os.replace(ALL_PHOTOS_PATH + file_path, rejected_photo_path)
                         shutil.copy(rejected_photo_path, REJECTED_PHOTOS_FLAT_PATH + os.path.basename(rejected_photo_path))
+                        if file_path not in rejected_flattened and class_no == 6:
+                            rejected[6].append(file_path)
                     else:
                         corrected_line_new = ';'.join((file_path, str(new_class_subclass[file_path][0]), str(new_class_subclass[file_path][1]), 
-                                                      str(new_extraclass[file_path]), author)) + ";\n"
+                                                      str(new_extraclass[file_path]), author)) + ";1;\n"
                         corrected_file.write(corrected_line_new)
                 else:
-                    corrected_file.write(all_file_line)
+                    if all_file_line[-1] == '\n':
+                        all_file_line = all_file_line[:-1]
+                    corrected_file.write(all_file_line + "0;\n")
+                    
+print("Fleiss Kappa: " + str(fleiss_K))
+print_results()
                 
