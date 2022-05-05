@@ -11,7 +11,7 @@ EVAL_PATH = "eval"
 TEST_PATH = "test"
 ANY_PATH = "any"
 
-label_CSV = "AugmentedDatasetLabel.csv"
+label_CSV = "MergedDatasetLabel.csv"
 
 
 Author_order = {"jlk": 0 ,"nmz": 1 , "atm": 2}
@@ -26,7 +26,7 @@ def checkIn():
         return 1
     if not os.path.isdir(IN_PICTURES_PATH):
         print("Nie znaleziono filderu ze zdjęciami")
-        print("Utwórz folder \"" + IN_PICTURES_PATH[:-1] + "\"")
+        print("Utwórz folder \"" + IN_PICTURES_PATH[:-1] + "\" lub zmień nazwę pliku label_CSV")
         return 1
     if not os.path.isdir(IN_PICTURES_PATH+TRAIN_PATH):
         print("Nie znaleziono filderu ")

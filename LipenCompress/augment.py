@@ -4,7 +4,6 @@ import matplotlib.image as mpimg
 import numpy as np
 import torch
 import torchvision.transforms as T
-from torchvision import datasets
 from torch.utils.data import Dataset, DataLoader
 import random
 import os
@@ -16,10 +15,11 @@ RESIZE_SIZE = (244,244)
 
 MEAN = []
 STD = []
+
 torch.manual_seed(1525)#int(random.random()*100 * random.random()))
 
 
-NEW_IMAGE_CREATION_MODE = False
+NEW_IMAGE_CREATION_MODE = True
 
 class RandomRotationTransform:
     """Rotate by one of the given angles."""
@@ -89,8 +89,6 @@ def plot(sour_img, imgs):
 
 
 def main():
-    calculateMeanStd()
-    return
     print("Witaj w programie augmentującym otagowane już zdjęcia")
     # Check imput
     if not os.path.isdir(IN_IMAGES_PATH):
@@ -167,7 +165,7 @@ def main():
                         ti_m = os.path.getmtime(IN_IMAGES_PATH + image)
                         pimage = Image.open(IN_IMAGES_PATH + image)
                         pimage = ImageOps.exif_transpose(pimage)
-                        sub_imgs = [my_Transform(pimage) for _ in range(1)]
+                        sub_imgs = [my_Transform(pimage) for _ in range(2)]
                         for i,sub_img in enumerate(sub_imgs):
                             # Save
                             path = image.split(".")[0]+"_"+str(i)+"."+image.split(".")[1] #works if path does not have "." inside
@@ -177,43 +175,8 @@ def main():
                             newline = ";".join([path, tag, subclass, extra, author, ending])
                             out_file.write(newline)
 
-def calculateMeanStd():
-    # calcuate means and stds:
-    # dataset = MyDataset(image_list)
-    dataset = datasets.ImageFolder(IN_IMAGES_PATH[:-1], transform=T.ToTensor())
-    # loader = DataLoader(dataset,batch_size=1,num_workers=0,shuffle=False)
-    mean = 0.0
-    std = 0.0
-    for img, _ in dataset:
-        mean += img.mean([1, 2])
-        std += img.std([1, 2])
-    mean /= len(dataset)
-    std /= len(dataset)
-    print("Dataset mean = " + str(mean))
-    print("Dataset std =  " + str(std))
-    MEAN = mean.tolist()
-    STD = std.tolist()
-    return MEAN, STD
-    #Train set:
-    #[0.5049, 0.4650, 0.4300]
-    #[0.1872, 0.1798, 0.1829]
 
 
-    #Merged Set:
-    #mean = tensor([0.5076, 0.4680, 0.4326])
-    #std = tensor([0.1844, 0.1776, 0.1801])
-
-    #Other:
-    # ([0.4784, 0.4712, 0.4662])
-    # ([0.2442, 0.2469, 0.2409])
-
-
-def fun():
-    return calculateMeanStd()[0]
-
-
-def fun2():
-    return calculateMeanStd()[1]
 
 
 my_Transform = T.Compose([
@@ -225,14 +188,14 @@ my_Transform = T.Compose([
         p=0.5),
     T.transforms.ToTensor(),
 
-    T.Normalize(mean=[0.4784, 0.4712, 0.4662],
-                std=[0.2442, 0.2469, 0.2409]),
+    #T.Normalize(mean=[0.4784, 0.4712, 0.4662],
+    #            std=[0.2442, 0.2469, 0.2409]),
     T.transforms.RandomApply(
-            [AddGaussianNoise(0., 0.01)],
+            [AddGaussianNoise(0., 0.005)],
             p=0.41
         ),
     T.transforms.RandomApply(
-        [T.transforms.GaussianBlur((1,9),(0.1,7))],
+        [T.transforms.GaussianBlur((1,9),(0.1,5.5))],
         p = 0.3),
 
     T.transforms.ToPILImage(),
