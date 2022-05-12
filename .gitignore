@@ -1,3 +1,10 @@
+#LipenNet
+LipenNet/lipvenv* 
+LipenNet/data*
+LipenNet/logs*
+LipenNet/models*
+LipenNet/.idea*
+
 #Tagger
 LipenTagger/litagvenv*
 LipenTagger/pictures/*
@@ -6,7 +13,14 @@ LipenTagger/__pycache__*
 LipenTagger/.idea*
 LipenTagger/LipenLabel.csv
 
-#LipenCompress
+#LipenTools
+LipenTools/litcovenv*
+LipenTools/inpictures/*
+LipenTools/outpictures/*
+LipenTools/.idea*
+LipenTools/__pycache__*
+
+#LipenCompress - OLD
 LipenCompress/litcovenv*
 LipenCompress/inpictures/*
 LipenCompress/outpictures/*
