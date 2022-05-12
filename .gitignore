@@ -1,8 +1,8 @@
 #LipenNet
 LipenNet/lipvenv* 
-LipenNet/data*
-LipenNet/logs*
-LipenNet/models*
+LipenNet/Data*
+LipenNet/Logs*
+LipenNet/Models*
 LipenNet/.idea*
 
 #Tagger
