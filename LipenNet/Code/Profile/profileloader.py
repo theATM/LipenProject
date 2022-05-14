@@ -3,17 +3,22 @@ import os.path
 import sys
 from typing import TypedDict,  get_type_hints
 
+import Code.Protocol.enums as en
+
 
 # noinspection PyTypedDict
 class Hparams(TypedDict):
     data_dir : str | None
     dataset_dir : str | None
+    dataset_name : en.DatasetName | None
     trainset_dir : str | None
     valset_dir : str | None
     testset_dir : str | None
     label_filename : str | None
 
-    online_augmentation : bool | None
+
+
+    augmentation_type : en.AugmentationType | None
 
     initial_learning_rate : float | None
 
@@ -38,6 +43,11 @@ def convertStrToType(key,value):
         return bool(value)
     elif set_type == list:
         return value[1:-1].split(",")
+    elif set_type == en.DatasetName:
+        return en.DatasetName[value]
+    elif set_type == en.AugmentationType:
+        return en.AugmentationType[value]
+
     else:
         print("Unimplemented Type Detected!")
         exit(err.PROFILE_UNIMPLEMENTED_TYPE)
@@ -53,6 +63,7 @@ __hparams  : Hparams = \
     "data_dir" : None,
     #Main Dataset Directory
     "dataset_dir" : None,
+    "dataset_name" : None,
     #Sub sets directory names
     "trainset_dir" : None,
     "valset_dir" : None,
@@ -60,7 +71,7 @@ __hparams  : Hparams = \
     "label_filename" : None,
 
     #Data Params
-    "online_augmentation" : None,
+    "augmentation_type" : None,
 
     "initial_learning_rate" : None,
     "scheduler_list" : None,

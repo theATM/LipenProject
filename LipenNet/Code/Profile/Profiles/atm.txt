@@ -5,6 +5,7 @@ data_dir = Data
 
 #Main Dataset Directory
 dataset_dir = CleanDataset
+dataset_name = CleanDataset
 
 #Sub sets directory names
 trainset_dir = train
@@ -15,7 +16,7 @@ label_filename = CleanDatasetLabel.csv
 ############################################3
 # Data Params
 
-online_augmentation = True
+augmentation_type = Without
 
 initial_learning_rate = 0.00001
 scheduler_list = [1,2 ,  3, 4, 5]

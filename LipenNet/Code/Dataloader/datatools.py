@@ -1,15 +1,17 @@
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
+from os import listdir
+from os.path import isdir,isfile, join
 
 
-class Lipenset(Dataset):
-    def __init__(self, dataset_dir):
-        self.dataset_dir = dataset_dir
-        self.images = []
+def getImageFiles(dir,path):
+    image_list = []
+    if dir[-1] != '/': dir = dir + '/'
 
+    for file in listdir(dir):
+        if isdir(join(dir, file)):
+            image_list.extend(getFiles(dir + file,path))
+        if isfile(join(dir, file)) and file.lower().endswith((".jpg", "jpeg", "png")):
+            if dir.split('/')[0]+'/' == path:
+                sdir = "/".join(dir.split('/')[1:]) # do not save image path to image name
+            image_list.append(str(sdir + file))
 
-    def __len__(self):
-        pass
-
-    def __getitem__(self, idx):
-        pass
+    return image_list
