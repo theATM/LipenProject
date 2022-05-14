@@ -3,7 +3,9 @@ import Code.Profile.profileloader as pl
 
 
 def main():
-    pl.loadProfile(sys.argv[1])
+    hparams = pl.loadProfile(sys.argv)
+    print("Sema")
+
 
 
 

@@ -1,0 +1,22 @@
+#Data Paths
+
+#Main Data Directory:
+data_dir = Data
+
+#Main Dataset Directory
+dataset_dir = CleanDataset
+
+#Sub sets directory names
+trainset_dir = train
+valset_dir = eval
+testset_dir = test
+label_filename = CleanDatasetLabel.csv
+
+############################################3
+# Data Params
+
+online_augmentation = True
+
+initial_learning_rate = 0.00001
+scheduler_list = [1,2 ,  3, 4, 5]
+

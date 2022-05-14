@@ -1,0 +1,8 @@
+#Profile Codes
+PROFILE_WRONG_PROGRAM_ARG_NUM               = 100
+PROFILE_WRONG_PARAM_NOT_FILE                = 101
+PROFILE_EMPTY_PARAM_VALUE                   = 102
+PROFILE_WRONG_KEY_IN_PROFILE_FILE           = 103
+PROFILE_NOT_ALL_PARAMS_SET                  = 104
+PROFILE_NONE_VALUE_PARAM                    = 105
+PROFILE_UNIMPLEMENTED_TYPE                  = 106
