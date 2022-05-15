@@ -4,12 +4,15 @@ import math
 import numpy as np
 import pickle
 import sys
+
+import skimage
 from torch.utils.data import Dataset, DataLoader
 
 
 import Code.Protocol.enums as en
 import Code.Dataloader.datatools as dt
 from Code.Profile.profileloader import Hparams
+from skimage import io
 from PIL import Image
 
 import Code.Dataloader.transforms as t
@@ -33,7 +36,8 @@ class Lipenset(Dataset):
 
         self.augmentation_type = hparams['augmentation_type']
 
-        match self.augmentation_type and dataset_type:
+        self.transform_tool = None
+        match (self.augmentation_type or dataset_type):
             case en.DatasetType.Testset | en.DatasetType.ValSet | en.AugmentationType.Without:
                 self.transform_tool = None
             case en.AugmentationType.Rotation:
@@ -43,8 +47,8 @@ class Lipenset(Dataset):
 
         self.images :list[dict] = []
         image_files = dt.getImageFiles(self.dataset_path,self.dataset_path)
-        image_amount = len(image_files)
-        if image_amount == 0:
+        self.image_amount = len(image_files)
+        if self.image_amount == 0:
             print("No Images were founded")
             sys.exit(1)
 
@@ -54,10 +58,14 @@ class Lipenset(Dataset):
                     name = label_line.split(";")[0]
                     if name == "\n": continue
                     if name == "Name": continue
-                    if name != image_file.split("/")[-1]: continue
+                    if name != image_file.split("/")[-2]+"/"+image_file.split("/")[-1]: continue
                     label = int(label_line.split(";")[1])
                     image_dict = {"label":label,"path":image_file}
                     self.images.append(image_dict)
+        if len(self.images) != self.image_amount:
+            print("Different image number in csv and dirs")
+            sys.exit(1)
+
 
         # Mix up the data
         if self.shuffle:
@@ -68,11 +76,11 @@ class Lipenset(Dataset):
 
     def __getitem__(self, idx):
         image_dict = self.images[idx]
-        with Image.open(image_dict["path"]) as image:
-            if self.transform_tool:
-                image = self.transform_tool.transform(image)
-            image_dict["image"] = image
-            return image_dict
+        image = skimage.io.imread(image_dict["path"])
+        if self.transform_tool:
+            image = self.transform_tool.transform(image)
+        image_dict["image"] = image
+        return image_dict
 
 
 
