@@ -7,7 +7,10 @@ def pickModel(hparams:Hparams):
     model = None
     match hparams['train_model']:
         case en.ModelType.A:
-            pass # TODO
+            model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
+        case en.ModelType.B:
+            model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=False)
+
     return model
 
 

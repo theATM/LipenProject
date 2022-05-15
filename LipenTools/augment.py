@@ -213,9 +213,11 @@ def main():
 
 my_Transform = T.Compose([
     T.Resize(RESIZE_SIZE),  ## 244p
-
     T.RandomVerticalFlip(p=0.3),
     T.RandomHorizontalFlip(p=0.3),
+    T.transforms.RandomApply(
+        [T.RandomRotation(degrees=(0, 360))], p=0.5
+    ),
     T.transforms.RandomApply(
         [T.transforms.ColorJitter(brightness=(0.9, 1), contrast=(0.5, 1), saturation=(0.5, 1), hue=(-0.5, 0.5))],
         p=0.5),
@@ -236,9 +238,7 @@ my_Transform = T.Compose([
     T.RandomInvert(p=0.1),
     T.RandomEqualize(p=0.3),
     T.RandomGrayscale(p=0.1),
-    T.transforms.RandomApply(
-        [T.RandomRotation(degrees=(0, 360))], p=0.5
-    ),
+
 
 
 
