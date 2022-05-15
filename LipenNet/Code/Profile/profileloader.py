@@ -20,12 +20,50 @@ class Hparams(TypedDict):
 
     #Training Parameters
     initial_learning_rate: float | None
-    scheduler_list: list | None
+    scheduler_list: list[int] | None
+
+    #Normalizaton Parameters
+    clean_dataset_mean : list[float] | None
+    clean_dataset_std  : list[float] | None
+
+    unified_dataset_mean: list[float] | None
+    unified_dataset_std: list[float] | None
+
+    merged_dataset_mean: list[float] | None
+    merged_dataset_std:  list[float] | None
+
 
     #Augmentation Parameters
     augmentation_type : en.AugmentationType | None
+    img_resize_size : tuple[int,int] | None
+    img_vertical_flip_prob : float | None
+    img_horizontal_flip_prob: float | None
 
+    img_color_jitter_prob: float | None
+    img_color_jitter_brightness: tuple[float,float] | None
+    img_color_jitter_contrast: tuple[float,float] | None
+    img_color_jitter_saturation: tuple[float,float] | None
+    img_color_jitter_hue: tuple[float,float] | None
 
+    img_gaussian_noise_prob: float | None
+    img_gaussian_noise_mean: float | None
+    img_gaussian_noise_std: float | None
+    img_gaussian_blur_prob: float | None
+    img_gaussian_blur_kernel_size: tuple[int, int] | None
+    img_gaussian_blur_sigma : tuple[float, float] | None
+
+    img_enhance_brightness_prob: float | None
+    img_enhance_brightness_brightness_intensity: float | None
+    img_enhance_brightness_max_brightness: float | None
+
+    img_random_invert_prob: float | None
+    img_random_equalize_prob: float | None
+    img_random_greyscale_prob: float | None
+    img_random_rotation_prob: float | None
+    img_random_rotation_degrees: tuple[int, int] | None
+
+    #Ratate Augmentation params
+    img_rotate_angles : list[int] | None
 
 
     def fun(self,key,value):
@@ -45,8 +83,14 @@ def convertStrToType(key,value):
         return float(value)
     elif set_type == bool:
         return bool(value)
-    elif set_type == list:
-        return value[1:-1].split(",")
+    elif set_type == list[float]:
+        return list(map(float,(value[1:-1].split(","))))
+    elif set_type == list[int]:
+        return list(map(int,(value[1:-1].split(","))))
+    elif set_type == tuple[float] or set_type == tuple[float,float] :
+        return tuple(map(float, (value[1:-1].split(","))))
+    elif set_type == tuple[int] or set_type == tuple[int,int] :
+        return tuple(map(int, (value[1:-1].split(","))))
     elif set_type == en.DatasetName:
         return en.DatasetName[value]
     elif set_type == en.AugmentationType:
@@ -74,11 +118,50 @@ __hparams  : Hparams = \
     "testset_dir" : None,
     "label_filename" : None,
 
-    #Data Params
-    "augmentation_type" : None,
-
     "initial_learning_rate" : None,
     "scheduler_list" : None,
+
+    # Normalizaton Parameters
+    "clean_dataset_mean": None,
+    "clean_dataset_std":  None,
+
+    "unified_dataset_mean":  None,
+    "unified_dataset_std":   None,
+
+    "merged_dataset_mean":   None,
+    "merged_dataset_std":   None,
+
+    # Augmentation Parameters
+    "augmentation_type":  None,
+    "img_resize_size":  None,
+    "img_vertical_flip_prob":   None,
+    "img_horizontal_flip_prob":   None,
+
+    "img_color_jitter_prob":   None,
+    "img_color_jitter_brightness":   None,
+    "img_color_jitter_contrast":   None,
+    "img_color_jitter_saturation":   None,
+    "img_color_jitter_hue":   None,
+
+    "img_gaussian_noise_prob":   None,
+    "img_gaussian_noise_mean": None,
+    "img_gaussian_noise_std": None,
+    "img_gaussian_blur_prob":   None,
+    "img_gaussian_blur_kernel_size": None,
+    "img_gaussian_blur_sigma":   None,
+
+    "img_enhance_brightness_prob":   None,
+    "img_enhance_brightness_brightness_intensity":   None,
+    "img_enhance_brightness_max_brightness":   None,
+
+    "img_random_invert_prob":   None,
+    "img_random_equalize_prob":   None,
+    "img_random_greyscale_prob":   None,
+    "img_random_rotation_prob":   None,
+    "img_random_rotation_degrees":  None,
+
+    # Ratate Augmentation params
+    "img_rotate_angles":  None,
 
 }
 
