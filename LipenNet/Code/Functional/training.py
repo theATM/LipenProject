@@ -18,6 +18,8 @@ def main():
     writer = SummaryWriter("Logs/Runs")
     train_loader, val_loader, test_loader = dl.loadData(hparams)
     model = ml.pickModel(hparams)
+    # or Load model
+    #TODO
     criterion = ml.pickCriterion(hparams)
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['train_scheduler_list'],gamma=0.75)

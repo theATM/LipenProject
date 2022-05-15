@@ -8,6 +8,8 @@ import Code.Protocol.enums as en
 
 # noinspection PyTypedDict
 class Hparams(TypedDict):
+    #HParams file (saved form input argument)
+    profile_file : str | None
     #Dataset Parameters (paths & names)
     data_dir : str | None                               #Data directory name (folder in which are datasets):
     dataset_dir : str | None                            #Chosen Dataset Directory
@@ -31,6 +33,8 @@ class Hparams(TypedDict):
     train_optimizer : en.OptimizerType | None
     train_criterion : en.CriterionType | None
 
+    #Eval Parameters
+    val_device: en.Device | None
 
 
     #Normalizaton Parameters
@@ -131,6 +135,8 @@ def convertStrToType(key,value):
 #Hiperparameters of this program
 __hparams  : Hparams = \
 {
+    # HParams file
+    "profile_file" : None,
     #Data Paths:
     #Main Data Directory
     "data_dir" : None,
@@ -154,6 +160,9 @@ __hparams  : Hparams = \
     "train_model": None,
     "train_optimizer": None,
     "train_criterion": None,
+
+    #Eval Parameters
+    "val_device":  None,
 
     # Normalizaton Parameters
     "clean_dataset_mean": None,
@@ -209,12 +218,13 @@ def loadProfile(arguments):
     if len(arguments) < 2:
         print("Pass the profile file name as an argument to script")
         sys.exit(err.PROFILE_WRONG_PROGRAM_ARG_NUM)
-    profile_name = arguments[1]
+    profile_name : str = arguments[1]
     profile_path = "Code/Profile/Profiles/" + profile_name
     if not os.path.exists(profile_path):
-        print("Wrong argument passed. Not a file. Pass the profile file name")
+        print("Wrong argument passed. " + profile_path+ " Not a file. Pass the profile file name")
         sys.exit(err.PROFILE_WRONG_PARAM_NOT_FILE)
-    with open("Code/Profile/Profiles/" + profile_name) as profile_file:
+    with open(profile_path) as profile_file:
+        __hparams["profile_file"] = profile_name
         for line in profile_file:
             if line[0] == "\n" : continue #ignore empty lines
             if line[0] == "#" : continue #ignore commands

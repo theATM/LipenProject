@@ -4,34 +4,30 @@ import sys
 import Code.Functional.utilities as u
 import Code.Dataloader.lipenset as dl
 import Code.Profile.profileloader as pl
+import Code.Architecture.modelloader as ml
 
 
 def main():
     hparams: pl.Hparams = pl.loadProfile(sys.argv)
-    val_device = torch.device(hparams['val_device'].value) #TODO
+    val_device = torch.device(hparams['val_device'].value)
     # Empty GPU Cache before Training starts
     if val_device == 'cuda': torch.cuda.empty_cache()
     # Load Data
     _ , _,testloader  = dl.loadData(hparams)
     model = ml.pickModel(hparams)
-
-    #Load Model
-    used_model = mod.UsedModel(par.MODEL_USED_MODEL_TYPE, arg_load_path=par.MODEL_LOAD_MODEL_PATH, arg_load=True,
-                               arg_load_device=eval_device,  arg_load_quantized=par.EVAL_LOAD_MODEL_IS_QUANTIZED)
-    used_model.model.to(eval_device)
+    model.to(val_device)
+    criterion = ml.pickCriterion(hparams)
 
     #Eval
     print("\nEvaluation Started")
-    printdatasetName()
-    used_model.model.eval()
-    model_accuracy, _,_ = evaluate(used_model, testloader, eval_device)
+    model.eval()
+    evaluate(model,criterion, testloader,val_device, hparams)
     print('Evaluation Accuracy on all test images, %2.2f' % (model_accuracy.avg))
     print("Evaluation Finished")
 
 
 
-def evaluate(model,criterion, data_loader, hparams: Hparams):
-    val_device = None #TODO
+def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
     model.eval()
     with torch.no_grad():
         for i, data in enumerate(data_loader):
