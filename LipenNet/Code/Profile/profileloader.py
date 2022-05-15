@@ -98,7 +98,7 @@ def convertStrToType(key,value):
 
     else:
         print("Unimplemented Type Detected!")
-        exit(err.PROFILE_UNIMPLEMENTED_TYPE)
+        sys.exit(err.PROFILE_UNIMPLEMENTED_TYPE)
 
 
 
@@ -183,7 +183,7 @@ def loadProfile(arguments):
             line = ''.join(line.rsplit())
             if len(line.split("=")) < 2:
                 print("Add value to the param in profile file (after = )")
-                exit(err.PROFILE_EMPTY_PARAM_VALUE)
+                sys.exit(err.PROFILE_EMPTY_PARAM_VALUE)
             parameter_key : str = line.split("=")[0]
             parameter_value = line.split("=")[1]
             if parameter_key in __hparams:
@@ -191,11 +191,11 @@ def loadProfile(arguments):
                 __hparams[parameter_key] = parameter_value
             else:
                 print("Wrong key in profile.txt")
-                exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
+                sys.exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
         #Check if all hparams are set:
         if not all(__hparams.values()):
             print("Not all parameters set!")
-            exit(err.PROFILE_NOT_ALL_PARAMS_SET)
+            raise Exception(err.PROFILE_NOT_ALL_PARAMS_SET)
         return __hparams
 
 
