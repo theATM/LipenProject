@@ -1,10 +1,8 @@
 from PIL import Image, ImageStat, ImageOps, ImageEnhance
-import numpy as np
+from torchvision.utils import save_image
 import torch
 import torchvision.transforms as T
-from torch.utils.data import Dataset, DataLoader
-import random
-import os
+import Code.Protocol.enums as en
 import random
 from Code.Profile.profileloader import Hparams
 
@@ -43,7 +41,7 @@ class EnhanceBrightness(object):  # Karol's work
 
     def __init__(self, bright: float = 2.5, max_bright: float = 3.0, probability: float = 1.0):
         if bright < 0 or max_bright < bright:
-            return #error?
+            return  # error?
         self.max_bright: float = max_bright
         self.bright: float = bright
         self.probability: float = probability
@@ -60,12 +58,13 @@ class EnhanceBrightness(object):  # Karol's work
 class LipenTransform:
     transform = None
 
-    def __init__(self, full_augmentation: bool, hparams: Hparams):
+    def __init__(self, full_augmentation: en.AugmentationType, hparams: Hparams):
         mean = hparams[hparams['dataset_name'].value + '_dataset_mean']  # type: ignore
         std = hparams[hparams['dataset_name'].value + '_dataset_std']  # type: ignore
 
-        if full_augmentation:
+        if full_augmentation == en.AugmentationType.Online:
             self.transform = T.Compose([
+                T.transforms.ToPILImage(),
                 T.Resize(hparams['resize_size']),
                 T.RandomVerticalFlip(hparams['vertical_flip_prob']),
                 T.RandomHorizontalFlip(hparams['horizontal_flip_prob']),
@@ -79,8 +78,6 @@ class LipenTransform:
                                               hparams['color_jitter_saturation'],
                                               hparams['color_jitter_hue'])],
                     p=hparams['color_jitter_prob']),
-
-
 
                 EnhanceBrightness(hparams['enhance_brightness_brightness_intensity'],
                                   hparams['enhance_brightness_max_brightness'],
@@ -98,13 +95,11 @@ class LipenTransform:
                 T.transforms.RandomApply(
                     [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
                     p=hparams['gaussian_blur_prob']),
-
-                #T.Normalize(mean, std),
-                T.transforms.ToPILImage(),
             ])
-        else:
+        elif full_augmentation == en.AugmentationType.Rotation:
             self.transform = T.Compose([
                 T.Resize(hparams['resize_size']),
                 RandomRotationTransform(hparams['rotate_angles']),
-                T.transforms.ToPILImage(),
             ])
+        elif full_augmentation == en.AugmentationType.Normalize:
+            self.transform = T.Normalize()

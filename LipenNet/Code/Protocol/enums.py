@@ -30,6 +30,7 @@ class AugmentationType(Enum):
     Without :str = "Without"
     Rotation :str = "Rotation"
     Online :str = "Online"
+    Normalize :str = "Normalize"
 
 
 class Device(Enum):
