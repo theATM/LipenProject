@@ -42,10 +42,8 @@ class EnhanceBrightness(object):  # Karol's work
         when you call it for specific picture it performs call method. Original design Karol Dziki, altered by ATM"""
 
     def __init__(self, bright: float = 2.5, max_bright: float = 3.0, probability: float = 1.0):
-        if bright < 0:
-            return 1
-        if max_bright < bright:
-            return 1
+        if bright < 0 or max_bright < bright:
+            return #error?
         self.max_bright: float = max_bright
         self.bright: float = bright
         self.probability: float = probability
