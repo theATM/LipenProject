@@ -16,10 +16,12 @@ from PIL import Image
 import Code.Dataloader.transforms as t
 import Code.Dataloader.datatools as dt
 
+
 class Lipenset(Dataset):
-    def __init__(self, hparams : Hparams, dataset_type:en.DatasetType):
+    def __init__(self, hparams : Hparams, dataset_type:en.DatasetType, shuffle=False):
         self.dataset_path = hparams['data_dir'] + "/" + hparams['dataset_dir']
         self.dataset_type = dataset_type
+        self.shuffle = shuffle
         match self.dataset_type:
             case en.DatasetType.Testset:
                 self.dataset_path = self.dataset_path + "/" + hparams['testset_dir']
@@ -58,6 +60,10 @@ class Lipenset(Dataset):
                     image_dict = {"label":label,"path":image_file}
                     self.images.append(image_dict)
 
+        # Mix up the data
+        if self.shuffle:
+            random.shuffle(self.images)
+
     def __len__(self):
         return len(self.images)
 
@@ -71,4 +77,13 @@ class Lipenset(Dataset):
 
 
 
-def loadData(hparams):
+def loadData(hparams : Hparams):
+    trainset = Lipenset(hparams,en.DatasetType.Trainset,shuffle=True)
+    valset = Lipenset(hparams, en.DatasetType.ValSet, shuffle=False)
+    testset = Lipenset(hparams, en.DatasetType.Testset, shuffle=False)
+
+    train_loader = DataLoader(trainset, batch_size=hparams['train_batch_size'], shuffle=True)
+    eval_loader = DataLoader(valset, batch_size=hparams['val_batch_size'], shuffle=False)
+    test_loader = DataLoader(testset, batch_size=hparams['test_batch_size'], shuffle=False)
+
+    return train_loader, eval_loader, test_loader

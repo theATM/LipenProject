@@ -17,10 +17,21 @@ class Hparams(TypedDict):
     valset_dir : str | None                             # eval set
     testset_dir : str | None                            # and testset , (if named "test" set as "test")
     label_filename : str | None                         #Name of the csv file with the labels
+    train_batch_size :int |None
+    val_batch_size: int | None
+    test_batch_size: int | None
 
     #Training Parameters
-    initial_learning_rate: float | None
-    scheduler_list: list[int] | None
+    train_initial_learning_rate: float | None
+    train_scheduler_list: list[int] | None
+    train_single_batch_test: bool | None
+    train_max_epoch: int | None
+    train_device: en.Device | None
+    train_model: en.ModelType | None
+    train_optimizer : en.OptimizerType | None
+    train_criterion : en.CriterionType | None
+
+
 
     #Normalizaton Parameters
     clean_dataset_mean : list[float] | None
@@ -112,14 +123,23 @@ __hparams  : Hparams = \
     #Main Dataset Directory
     "dataset_dir" : None,
     "dataset_name" : None,
-
     "trainset_dir" : None,
     "valset_dir" : None,
     "testset_dir" : None,
     "label_filename" : None,
+    "train_batch_size" :None,
+    "val_batch_size":  None,
+    "test_batch_size":  None,
 
-    "initial_learning_rate" : None,
-    "scheduler_list" : None,
+    #Training Params
+    "train_initial_learning_rate" : None,
+    "train_scheduler_list" : None,
+    "train_single_batch_test": None,
+    "train_max_epoch":None,
+    "train_device" :None,
+    "train_model": None,
+    "train_optimizer": None,
+    "train_criterion": None,
 
     # Normalizaton Parameters
     "clean_dataset_mean": None,
