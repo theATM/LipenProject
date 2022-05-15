@@ -8,8 +8,8 @@ import Code.Dataloader.lipenset as dl
 
 def main():
     hparams : pl.Hparams = pl.loadProfile(sys.argv)
-    device = torch.device(hparams['train_device'])
-    writer = SummaryWriter()
+    device = torch.device(hparams['train_device'].value)
+    writer = SummaryWriter("Logs/Runs")
     train_loader, val_loader, test_loader = dl.loadData(hparams)
     model = None #TODO
     criterion = None #TODO

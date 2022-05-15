@@ -106,9 +106,17 @@ def convertStrToType(key,value):
         return en.DatasetName[value]
     elif set_type == en.AugmentationType:
         return en.AugmentationType[value]
+    elif set_type == en.Device:
+        return en.Device[value]
+    elif set_type == en.ModelType:
+        return en.ModelType[value]
+    elif set_type == en.OptimizerType:
+        return en.OptimizerType[value]
+    elif set_type == en.CriterionType:
+        return en.CriterionType[value]
 
     else:
-        print("Unimplemented Type Detected!")
+        print("Unimplemented Type Detected! -> " + str(set_type))
         sys.exit(err.PROFILE_UNIMPLEMENTED_TYPE)
 
 
@@ -209,7 +217,7 @@ def loadProfile(arguments):
                 parameter_value = convertStrToType(parameter_key,parameter_value)
                 __hparams[parameter_key] = parameter_value
             else:
-                print("Wrong key in profile.txt")
+                print("Wrong key in profile.txt -> "+ parameter_key)
                 sys.exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
         #Check if all hparams are set:
         if any( elem is None for elem in __hparams.values()):
