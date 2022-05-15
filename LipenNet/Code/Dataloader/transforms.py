@@ -61,8 +61,8 @@ class LipenTransform:
     transform = None
 
     def __init__(self, full_augmentation: bool, hparams: Hparams):
-        mean = hparams[hparams['dataset_name'] + '_dataset_mean']  # type: ignore
-        std = hparams[hparams['dataset_name'] + '_dataset_std']  # type: ignore
+        mean = hparams[hparams['dataset_name'].value + '_dataset_mean']  # type: ignore
+        std = hparams[hparams['dataset_name'].value + '_dataset_std']  # type: ignore
 
         if full_augmentation:
             self.transform = T.Compose([
