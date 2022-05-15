@@ -86,9 +86,6 @@ class LipenTransform:
                 T.transforms.RandomApply(
                     [AddGaussianNoise(hparams['gaussian_noise_mean'], hparams['gaussian_noise_std'])],
                     p=hparams['gaussian_noise_prob']),
-                T.transforms.RandomApply(
-                    [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
-                    p=hparams['gaussian_blur_prob']),
 
                 EnhanceBrightness(hparams['enhance_brightness_brightness_intensity'],
                                   hparams['enhance_brightness_max_brightness'],
@@ -96,6 +93,12 @@ class LipenTransform:
                 T.RandomEqualize(hparams['random_equalize_prob']),
                 T.RandomGrayscale(hparams['random_greyscale_prob']),
                 T.RandomInvert(hparams['random_invert_prob']),
+
+                T.ToTensor(),
+
+                T.transforms.RandomApply(
+                    [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
+                    p=hparams['gaussian_blur_prob']),
 
                 T.Normalize(mean, std)
             ])
