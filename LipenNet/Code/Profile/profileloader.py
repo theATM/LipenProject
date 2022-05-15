@@ -193,7 +193,7 @@ def loadProfile(arguments):
                 print("Wrong key in profile.txt")
                 sys.exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
         #Check if all hparams are set:
-        if not all(__hparams.values()):
+        if any( elem is None for elem in __hparams.values()):
             print("Not all parameters set!")
             sys.exit(err.PROFILE_NOT_ALL_PARAMS_SET)
         return __hparams
