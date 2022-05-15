@@ -8,21 +8,25 @@ import Code.Protocol.enums as en
 
 # noinspection PyTypedDict
 class Hparams(TypedDict):
-    data_dir : str | None
-    dataset_dir : str | None
-    dataset_name : en.DatasetName | None
-    trainset_dir : str | None
-    valset_dir : str | None
-    testset_dir : str | None
-    label_filename : str | None
+    #Dataset Parameters (paths & names)
+    data_dir : str | None                               #Data directory name (folder in which are datasets):
+    dataset_dir : str | None                            #Chosen Dataset Directory
+    dataset_name : en.DatasetName | None                #Dataset name (must be registered by enum DatasetName)
+    #Sub sets directory names
+    trainset_dir : str | None                           #Names of dirs where are train set,
+    valset_dir : str | None                             # eval set
+    testset_dir : str | None                            # and testset , (if named "test" set as "test")
+    label_filename : str | None                         #Name of the csv file with the labels
 
+    #Training Parameters
+    initial_learning_rate: float | None
+    scheduler_list: list | None
 
-
+    #Augmentation Parameters
     augmentation_type : en.AugmentationType | None
 
-    initial_learning_rate : float | None
 
-    scheduler_list : list | None
+
 
     def fun(self,key,value):
         self[key] = value
@@ -64,7 +68,7 @@ __hparams  : Hparams = \
     #Main Dataset Directory
     "dataset_dir" : None,
     "dataset_name" : None,
-    #Sub sets directory names
+
     "trainset_dir" : None,
     "valset_dir" : None,
     "testset_dir" : None,

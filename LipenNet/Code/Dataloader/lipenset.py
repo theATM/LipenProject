@@ -7,10 +7,14 @@ import pickle
 import sys
 from torch.utils.data import Dataset, DataLoader
 
+
 import Code.Protocol.enums as en
 import Code.Dataloader.datatools as dt
 from Code.Profile.profileloader import Hparams
 from PIL import Image
+
+import Code.Dataloader.transforms as t
+import Code.Dataloader.datatools as dt
 
 class Lipenset(Dataset):
     def __init__(self, hparams : Hparams, dataset_type:en.DatasetType):
@@ -30,13 +34,13 @@ class Lipenset(Dataset):
 
         match self.augmentation_type and dataset_type:
             case en.DatasetType.Testset | en.DatasetType.ValSet | en.AugmentationType.Without:
-                self.transform = None
+                self.transform_tool = None
             case en.AugmentationType.Rotation:
-                self.transform = None
+                self.transform_tool = t.LipenTransform(full_augmentation=False, hparams=hparams)
             case en.AugmentationType.Online:
-                self.transform = None
+                self.transform_tool = t.LipenTransform(full_augmentation=True, hparams=hparams)
 
-        self.images :list(dict) = []
+        self.images :list[dict] = []
         image_files = dt.getImageFiles(self.dataset_path,self.dataset_path)
         image_amount = len(image_files)
         if image_amount == 0:
@@ -55,15 +59,15 @@ class Lipenset(Dataset):
                     self.images.append(image_dict)
 
     def __len__(self):
-        return len(self.self.images)
+        return len(self.images)
 
     def __getitem__(self, idx):
         image_dict = self.images[idx]
-        image = Image(image_dict["path"])
-        if self.transform:
-            image = self.transform(image)
-        image_dict["image"] = image
-        return image_dict
+        with Image.open(image_dict["path"]) as image:
+            if self.transform_tool:
+                image = self.transform_tool.transform(image)
+            image_dict["image"] = image
+            return image_dict
 
 
 

@@ -14,6 +14,18 @@ class DatasetType(Enum):
     ValSet: str = "ValSet"
 
 
+class CriterionType(Enum):
+    CrossEntropy : str = "CrossEntropy"
+
+
+class OptimizerType(Enum):
+    Adam :str = "Adam"
+
+
+class ModelType(Enum):
+    A :str = "A"  #TODO
+
+
 class AugmentationType(Enum):
     Without :str = "Without"
     Rotation :str = "Rotation"

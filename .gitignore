@@ -1,3 +1,8 @@
+#Global
+*__pycache__*
+resourses/*
+*.csv
+
 #LipenNet
 LipenNet/lipvenv* 
 LipenNet/Data*
@@ -27,6 +32,5 @@ LipenCompress/outpictures/*
 LipenCompress/.idea*
 LipenCompress/__pycache__*
 
-resourses/*
-*.csv
+
 
