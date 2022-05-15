@@ -35,35 +35,35 @@ class Hparams(TypedDict):
 
     #Augmentation Parameters
     augmentation_type : en.AugmentationType | None
-    img_resize_size : tuple[int,int] | None
-    img_vertical_flip_prob : float | None
-    img_horizontal_flip_prob: float | None
+    resize_size : tuple[int,int] | None
+    vertical_flip_prob : float | None
+    horizontal_flip_prob: float | None
 
-    img_color_jitter_prob: float | None
-    img_color_jitter_brightness: tuple[float,float] | None
-    img_color_jitter_contrast: tuple[float,float] | None
-    img_color_jitter_saturation: tuple[float,float] | None
-    img_color_jitter_hue: tuple[float,float] | None
+    color_jitter_prob: float | None
+    color_jitter_brightness: tuple[float,float] | None
+    color_jitter_contrast: tuple[float,float] | None
+    color_jitter_saturation: tuple[float,float] | None
+    color_jitter_hue: tuple[float,float] | None
 
-    img_gaussian_noise_prob: float | None
-    img_gaussian_noise_mean: float | None
-    img_gaussian_noise_std: float | None
-    img_gaussian_blur_prob: float | None
-    img_gaussian_blur_kernel_size: tuple[int, int] | None
-    img_gaussian_blur_sigma : tuple[float, float] | None
+    gaussian_noise_prob: float | None
+    gaussian_noise_mean: float | None
+    gaussian_noise_std: float | None
+    gaussian_blur_prob: float | None
+    gaussian_blur_kernel_size: tuple[int, int] | None
+    gaussian_blur_sigma : tuple[float, float] | None
 
-    img_enhance_brightness_prob: float | None
-    img_enhance_brightness_brightness_intensity: float | None
-    img_enhance_brightness_max_brightness: float | None
+    enhance_brightness_prob: float | None
+    enhance_brightness_brightness_intensity: float | None
+    enhance_brightness_max_brightness: float | None
 
-    img_random_invert_prob: float | None
-    img_random_equalize_prob: float | None
-    img_random_greyscale_prob: float | None
-    img_random_rotation_prob: float | None
-    img_random_rotation_degrees: tuple[int, int] | None
+    random_invert_prob: float | None
+    random_equalize_prob: float | None
+    random_greyscale_prob: float | None
+    random_rotation_prob: float | None
+    random_rotation_degrees: tuple[int, int] | None
 
     #Ratate Augmentation params
-    img_rotate_angles : list[int] | None
+    rotate_angles : list[int] | None
 
 
     def fun(self,key,value):
@@ -133,36 +133,35 @@ __hparams  : Hparams = \
 
     # Augmentation Parameters
     "augmentation_type":  None,
-    "img_resize_size":  None,
-    "img_vertical_flip_prob":   None,
-    "img_horizontal_flip_prob":   None,
+    "resize_size":  None,
+    "vertical_flip_prob":   None,
+    "horizontal_flip_prob":   None,
 
-    "img_color_jitter_prob":   None,
-    "img_color_jitter_brightness":   None,
-    "img_color_jitter_contrast":   None,
-    "img_color_jitter_saturation":   None,
-    "img_color_jitter_hue":   None,
+    "color_jitter_prob":   None,
+    "color_jitter_brightness":   None,
+    "color_jitter_contrast":   None,
+    "color_jitter_saturation":   None,
+    "color_jitter_hue":   None,
 
-    "img_gaussian_noise_prob":   None,
-    "img_gaussian_noise_mean": None,
-    "img_gaussian_noise_std": None,
-    "img_gaussian_blur_prob":   None,
-    "img_gaussian_blur_kernel_size": None,
-    "img_gaussian_blur_sigma":   None,
+    "gaussian_noise_prob":   None,
+    "gaussian_noise_mean": None,
+    "gaussian_noise_std": None,
+    "gaussian_blur_prob":   None,
+    "gaussian_blur_kernel_size": None,
+    "gaussian_blur_sigma":   None,
 
-    "img_enhance_brightness_prob":   None,
-    "img_enhance_brightness_brightness_intensity":   None,
-    "img_enhance_brightness_max_brightness":   None,
+    "enhance_brightness_prob":   None,
+    "enhance_brightness_brightness_intensity":   None,
+    "enhance_brightness_max_brightness":   None,
 
-    "img_random_invert_prob":   None,
-    "img_random_equalize_prob":   None,
-    "img_random_greyscale_prob":   None,
-    "img_random_rotation_prob":   None,
-    "img_random_rotation_degrees":  None,
+    "random_invert_prob":   None,
+    "random_equalize_prob":   None,
+    "random_greyscale_prob":   None,
+    "random_rotation_prob":   None,
+    "random_rotation_degrees":  None,
 
     # Ratate Augmentation params
-    "img_rotate_angles":  None,
-
+    "rotate_angles":  None,
 }
 
 
