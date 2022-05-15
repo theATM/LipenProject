@@ -62,12 +62,9 @@ class EnhanceBrightness(object):  # Karol's work
 class LipenTransform:
     transform = None
 
-    def __init__(self, full_augmentation: bool, hparams: Hparams, dataset_type: str):
-        if dataset_type not in ["clean", "unified", "merged"]:
-            raise ValueError("dataset_type must be one of the following: 'clean', 'unified' or 'merged'")
-
-        mean = hparams[dataset_type + '_dataset_mean']  # type: ignore
-        std = hparams[dataset_type + '_dataset_std']  # type: ignore
+    def __init__(self, full_augmentation: bool, hparams: Hparams):
+        mean = hparams[hparams['dataset_name'] + '_dataset_mean']  # type: ignore
+        std = hparams[hparams['dataset_name'] + '_dataset_std']  # type: ignore
 
         if full_augmentation:
             self.transform = T.Compose([

@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class DatasetName(Enum):
-    RawDataset :str = "RawDataset"
-    CleanDataset :str = "CleanDataset"
-    UniformDataset :str = "UniformDataset"
-    MergedDataset :str = "MergedDataset"
+    RawDataset: str = "raw"
+    CleanDataset: str = "clean"
+    UniformDataset: str = "unified"
+    MergedDataset: str = "merged"
 
 
 class DatasetType(Enum):
