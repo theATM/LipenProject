@@ -1,5 +1,6 @@
 from torchvision import datasets
 import torchvision.transforms as T
+import math
 
 IN_IMAGES_PATH = "inpictures/"
 
@@ -11,21 +12,23 @@ def main():
 
 def calculateMeanStd():
     # calcuate means and stds:
-    # dataset = MyDataset(image_list)
     dataset = datasets.ImageFolder(IN_IMAGES_PATH[:-1], transform=T.ToTensor())
-    # loader = DataLoader(dataset,batch_size=1,num_workers=0,shuffle=False)
-    mean = 0.0
-    std = 0.0
+    sum_vec = 0.0
+    sum_squares = 0.0
     for img, _ in dataset:
-        mean += img.mean([1, 2])
-        std += img.std([1, 2])
-    mean /= len(dataset)
-    std /= len(dataset)
+        sum_vec += img.sum([1, 2])
+        sum_squares += (img**2).sum([1, 2])
+    image_size = dataset[0][0].size()
+    pixels_in_image = image_size[1] * image_size[2]
+    pixels_in_dataset = pixels_in_image * len(dataset)
+    mean = [ch_sum / pixels_in_dataset for ch_sum in sum_vec]
+    variance = [(ch_sum_squares - ch_sum**2 / pixels_in_dataset) / pixels_in_dataset
+                for ch_sum_squares, ch_sum in zip(sum_squares, sum_vec)]
+    std = [math.sqrt(ch_var) for ch_var in variance]
+    mean = [m_ch.tolist() for m_ch in mean]
     print("Dataset mean = " + str(mean))
     print("Dataset std =  " + str(std))
-    MEAN = mean.tolist()
-    STD = std.tolist()
-    return MEAN, STD
+    return mean, std
 
 
 
