@@ -5,7 +5,7 @@ data_dir = Data
 
 #Main Dataset Directory
 dataset_dir = CleanDataset
-dataset_name = CleanDataset
+dataset_name = clean
 
 #Sub sets directory names
 trainset_dir = train
