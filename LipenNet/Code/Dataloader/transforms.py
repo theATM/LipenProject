@@ -8,6 +8,7 @@ import os
 import random
 from Code.Profile.profileloader import Hparams
 
+
 class RandomRotationTransform:
     """Rotate by one of the given angles."""
 
@@ -32,17 +33,19 @@ class AddGaussianNoise(object):  # this is dangerous do not use!!!
 
 
 class EnhanceBrightness(object):  # Karol's work
-    '''This is custom transform class
+    """This is custom transform class
         It creates bright circle in the center of image
         when initializing you can set
         brightness - float value determine minimal brightness would be product image, should be in <0, 1) <- dimmer <1 , max_bright) <- lighter
         probability - float value (0,1> determines the logically of preforming the transformation
         max_bright - float value (not smaller than bright) maximal brightness of the product image
-        when you call it for specific picture it performs call method. Original design Karol Dziki, altered by ATM'''
+        when you call it for specific picture it performs call method. Original design Karol Dziki, altered by ATM"""
 
     def __init__(self, bright: float = 2.5, max_bright: float = 3.0, probability: float = 1.0):
-        if bright < 0: return 1
-        if max_bright < bright: return 1
+        if bright < 0:
+            return 1
+        if max_bright < bright:
+            return 1
         self.max_bright: float = max_bright
         self.bright: float = bright
         self.probability: float = probability
@@ -56,77 +59,50 @@ class EnhanceBrightness(object):  # Karol's work
             return img  # do nothing
 
 
-full_Transform = T.Compose([
-    T.Resize(RESIZE_SIZE),  ## 244p
-
-    T.RandomVerticalFlip(p=0.3),
-    T.RandomHorizontalFlip(p=0.3),
-    T.transforms.RandomApply(
-        [T.transforms.ColorJitter(brightness=(0.9, 1), contrast=(0.5, 1), saturation=(0.5, 1), hue=(-0.5, 0.5))],
-        p=0.5),
-    T.transforms.ToTensor(),
-
-    # T.Normalize(mean=[0.4784, 0.4712, 0.4662],
-    #            std=[0.2442, 0.2469, 0.2409]),
-    T.transforms.RandomApply(
-        [AddGaussianNoise(0., 0.005)],
-        p=0.41
-    ),
-    T.transforms.RandomApply(
-        [T.transforms.GaussianBlur((1, 9), (0.1, 5))],
-        p=0.3),
-
-    T.transforms.ToPILImage(),
-    EnhanceBrightness(bright=1.1, max_bright=1.6, probability=0.2),
-    T.RandomInvert(p=0.1),
-    T.RandomEqualize(p=0.3),
-    T.RandomGrayscale(p=0.1),
-    T.transforms.RandomApply(
-        [T.RandomRotation(degrees=(0, 360))], p=0.5
-    )])
-
-
 class LipenTransform:
     transform = None
 
-    def __init__(self, full_augmentation: bool, hparams: Hparams):
+    def __init__(self, full_augmentation: bool, hparams: Hparams, dataset_type: str):
+        if dataset_type not in ["clean", "unified", "merged"]:
+            raise ValueError("dataset_type must be one of the following: 'clean', 'unified' or 'merged'")
 
-        mean = [0.4784, 0.4712, 0.4662]
-        std = [0.2442, 0.2469, 0.2409]
+        mean = hparams[dataset_type + '_dataset_mean']  # type: ignore
+        std = hparams[dataset_type + '_dataset_std']  # type: ignore
 
         if full_augmentation:
             self.transform = T.Compose([
-                T.Resize(resize_size),
-                T.RandomVerticalFlip(p=0.3),
-                T.RandomHorizontalFlip(p=0.3),
+                T.Resize(hparams['resize_size']),
+                T.RandomVerticalFlip(hparams['vertical_flip_prob']),
+                T.RandomHorizontalFlip(hparams['horizontal_flip_prob']),
                 T.transforms.RandomApply(
-                    [T.transforms.ColorJitter(brightness=(0.9, 1), contrast=(0.5, 1), saturation=(0.5, 1),
-                                              hue=(-0.5, 0.5))],
-                    p=0.5),
-                T.transforms.ToTensor(),
+                    [T.RandomRotation(degrees=hparams['random_rotation_degrees'])],
+                    p=hparams['random_rotation_prob']),
 
-                T.Normalize(mean=[0.4784, 0.4712, 0.4662],
-                            std=[0.2442, 0.2469, 0.2409]),
                 T.transforms.RandomApply(
-                    [AddGaussianNoise(0., 0.005)],
-                    p=0.41
-                ),
-                T.transforms.RandomApply(
-                    [T.transforms.GaussianBlur((1, 9), (0.1, 5))],
-                    p=0.3),
+                    [T.transforms.ColorJitter(hparams['color_jitter_brightness'],
+                                              hparams['color_jitter_contrast'],
+                                              hparams['color_jitter_saturation'],
+                                              hparams['color_jitter_hue'])],
+                    p=hparams['color_jitter_prob']),
 
-                T.transforms.ToPILImage(),
-                EnhanceBrightness(bright=1.1, max_bright=1.6, probability=0.2),
-                T.RandomInvert(p=0.1),
-                T.RandomEqualize(p=0.3),
-                T.RandomGrayscale(p=0.1),
                 T.transforms.RandomApply(
-                    [T.RandomRotation(degrees=(0, 360))], p=0.5
-                ),
+                    [AddGaussianNoise(hparams['gaussian_noise_mean'], hparams['gaussian_noise_std'])],
+                    p=hparams['gaussian_noise_prob']),
+                T.transforms.RandomApply(
+                    [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
+                    p=hparams['gaussian_blur_prob']),
+
+                EnhanceBrightness(hparams['enhance_brightness_brightness_intensity'],
+                                  hparams['enhance_brightness_max_brightness'],
+                                  hparams['enhance_brightness_prob']),
+                T.RandomEqualize(hparams['random_equalize_prob']),
+                T.RandomGrayscale(hparams['random_greyscale_prob']),
+                T.RandomInvert(hparams['random_invert_prob']),
+
+                T.Normalize(mean, std)
             ])
-
         else:
             self.transform = T.Compose([
-                T.Resize(resize_size),
-                RandomRotationTransform(angles=[-90, 90, 0, 180, -180]),
+                T.Resize(hparams['resize_size']),
+                RandomRotationTransform(hparams['rotate_angles']),
             ])
