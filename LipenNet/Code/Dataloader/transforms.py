@@ -97,10 +97,12 @@ class LipenTransform:
                     [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
                     p=hparams['gaussian_blur_prob']),
 
-                T.Normalize(mean, std)
+                T.Normalize(mean, std),
+                T.transforms.ToPILImage(),
             ])
         else:
             self.transform = T.Compose([
                 T.Resize(hparams['resize_size']),
                 RandomRotationTransform(hparams['rotate_angles']),
+                T.transforms.ToPILImage(),
             ])
