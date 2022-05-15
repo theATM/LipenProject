@@ -80,9 +80,7 @@ class LipenTransform:
                                               hparams['color_jitter_hue'])],
                     p=hparams['color_jitter_prob']),
 
-                T.transforms.RandomApply(
-                    [AddGaussianNoise(hparams['gaussian_noise_mean'], hparams['gaussian_noise_std'])],
-                    p=hparams['gaussian_noise_prob']),
+
 
                 EnhanceBrightness(hparams['enhance_brightness_brightness_intensity'],
                                   hparams['enhance_brightness_max_brightness'],
@@ -94,13 +92,19 @@ class LipenTransform:
                 T.ToTensor(),
 
                 T.transforms.RandomApply(
+                    [AddGaussianNoise(hparams['gaussian_noise_mean'], hparams['gaussian_noise_std'])],
+                    p=hparams['gaussian_noise_prob']),
+
+                T.transforms.RandomApply(
                     [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
                     p=hparams['gaussian_blur_prob']),
 
-                T.Normalize(mean, std)
+                #T.Normalize(mean, std),
+                T.transforms.ToPILImage(),
             ])
         else:
             self.transform = T.Compose([
                 T.Resize(hparams['resize_size']),
                 RandomRotationTransform(hparams['rotate_angles']),
+                T.transforms.ToPILImage(),
             ])

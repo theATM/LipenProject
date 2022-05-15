@@ -11,6 +11,7 @@ pyvenv.cfg
 #LipenNet
 LipenNet/lipvenv* 
 LipenNet/Data*
+!LipenNet/Logs/copylastlog.sh
 LipenNet/Logs*
 LipenNet/Models*
 LipenNet/.idea*
