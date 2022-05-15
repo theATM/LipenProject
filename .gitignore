@@ -2,6 +2,11 @@
 *__pycache__*
 resourses/*
 *.csv
+bin/*
+lib*
+share*
+pyvenv.cfg
+*.swp
 
 #LipenNet
 LipenNet/lipvenv* 
