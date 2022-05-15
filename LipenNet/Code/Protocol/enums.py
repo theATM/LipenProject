@@ -31,3 +31,8 @@ class AugmentationType(Enum):
     Rotation :str = "Rotation"
     Online :str = "Online"
 
+
+class Device(Enum):
+    Cuda :str = "cuda"
+    Cpu :str = "cpu"
+
