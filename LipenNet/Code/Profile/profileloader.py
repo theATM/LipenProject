@@ -195,7 +195,7 @@ def loadProfile(arguments):
         #Check if all hparams are set:
         if not all(__hparams.values()):
             print("Not all parameters set!")
-            raise Exception(err.PROFILE_NOT_ALL_PARAMS_SET)
+            sys.exit(err.PROFILE_NOT_ALL_PARAMS_SET)
         return __hparams
 
 
