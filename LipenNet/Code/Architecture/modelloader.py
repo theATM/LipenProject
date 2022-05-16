@@ -1,4 +1,5 @@
 import torch
+import torchvision.models
 import Code.Protocol.enums as en
 from Code.Profile.profileloader import Hparams
 
@@ -7,7 +8,11 @@ def pickModel(hparams:Hparams):
     model = None
     match hparams['train_model']:
         case en.ModelType.A:
-            model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
+            model = torchvision.models.resnet18(pretrained=True,)
+            print(model)
+            model.fc.in_features = torch.nn.Linear(model.fc.in_features, 6) #add last layer
+            print(model)
+
         case en.ModelType.B:
             model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=False)
 

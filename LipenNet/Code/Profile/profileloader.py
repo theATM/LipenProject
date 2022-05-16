@@ -5,6 +5,7 @@ from typing import TypedDict,  get_type_hints
 
 import Code.Protocol.enums as en
 
+DEFAULT_PROFILE_DIR_PATH = "Code/Profile/Profiles/"
 
 # noinspection PyTypedDict
 class Hparams(TypedDict):
@@ -22,6 +23,10 @@ class Hparams(TypedDict):
     train_batch_size :int |None
     val_batch_size: int | None
     test_batch_size: int | None
+
+    #Load Params
+    load_model : bool| None                             #Filled automatically (pass loaded model as run param)
+    load_model_path : str | None                        #Filled automatically
 
     #Training Parameters
     train_initial_learning_rate: float | None
@@ -150,6 +155,9 @@ __hparams  : Hparams = \
     "train_batch_size" :None,
     "val_batch_size":  None,
     "test_batch_size":  None,
+    #Load Params
+    "load_model" : None,
+    "load_model_path" : None,
 
     #Training Params
     "train_initial_learning_rate" : None,
@@ -215,19 +223,36 @@ __hparams  : Hparams = \
 
 
 def loadProfile(arguments):
+    """
+    Function meant to load and decipher profile.txt file with hyper parameters
+    :param arguments - run arguments passed from user ( arg 1 - profile.txt, arg 2 - loadable model path (optional )):
+    :return - hparams dict with all hyper parameters set:
+    """
     if len(arguments) < 2:
         print("Pass the profile file name as an argument to script")
         sys.exit(err.PROFILE_WRONG_PROGRAM_ARG_NUM)
+    #decode 1st run argument  - profile file path or name
     profile_name : str = arguments[1]
-    profile_path = "Code/Profile/Profiles/" + profile_name
+    #decode 2nd (if present) run argument - optional - loadable model path
+    load_model_path : str = arguments [2] if len(arguments) > 3 else ""
+    #profile path is default (DEFAULT_PROFILE_DIR_PATH + profile_name) or present in profile_name (if name contains any "/")
+    profile_path = DEFAULT_PROFILE_DIR_PATH + profile_name if len(profile_name.split("/")) == 1 else profile_name
     if not os.path.exists(profile_path):
         print("Wrong argument passed. " + profile_path+ " Not a file. Pass the profile file name")
         sys.exit(err.PROFILE_WRONG_PARAM_NOT_FILE)
     with open(profile_path) as profile_file:
-        __hparams["profile_file"] = profile_name
+        #Save profile path to dict
+        __hparams["profile_file"] = profile_path
+        #Save info if there is a file with loadable model
+        __hparams['load_model'] = True if load_model_path != "" else False
+        __hparams['load_model_path'] = load_model_path
+        #Check every line in profile file
         for line in profile_file:
-            if line[0] == "\n" : continue #ignore empty lines
-            if line[0] == "#" : continue #ignore commands
+            #ignore empty lines
+            if line[0] == "\n" : continue
+            #ignore comments
+            if line[0] == "#" : continue
+            #decode parameter line:
             line = line.rstrip()
             line = ''.join(line.rsplit())
             if len(line.split("=")) < 2:

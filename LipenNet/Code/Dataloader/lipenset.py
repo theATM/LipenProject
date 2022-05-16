@@ -39,11 +39,13 @@ class Lipenset(Dataset):
         self.transform_tool = None
         match (self.augmentation_type or dataset_type):
             case en.DatasetType.Testset | en.DatasetType.ValSet | en.AugmentationType.Without:
-                self.transform_tool = None
+                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Without, hparams=hparams)
+            case en.AugmentationType.Normalize:
+                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Normalize, hparams=hparams)
             case en.AugmentationType.Rotation:
-                self.transform_tool = t.LipenTransform(full_augmentation=False, hparams=hparams)
+                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Rotation, hparams=hparams)
             case en.AugmentationType.Online:
-                self.transform_tool = t.LipenTransform(full_augmentation=True, hparams=hparams)
+                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Online, hparams=hparams)
 
         self.images :list[dict] = []
         image_files = dt.getImageFiles(self.dataset_path,self.dataset_path)
@@ -76,10 +78,10 @@ class Lipenset(Dataset):
 
     def __getitem__(self, idx):
         image_dict = self.images[idx]
-        image = skimage.io.imread(image_dict["path"])
-        if self.transform_tool:
-            image = self.transform_tool.transform(image)
+        imagep = Image.open(image_dict["path"])
+        image = self.transform_tool.transform(imagep)
         image_dict["image"] = image
+        imagep.close()
         return image_dict
 
 
