@@ -9,49 +9,81 @@ from torch.nn.utils import clip_grad_norm_
 import Code.Profile.profileloader as pl
 import Code.Dataloader.lipenset as dl
 import Code.Architecture.modelloader as ml
+import Code.Functional.utilities as ut
+import Code.Functional.evaluation as eva
 
 
 def main():
+    # Measure training time
+    start_time = time.perf_counter()
+    # Load Parameters
     hparams : pl.Hparams = pl.loadProfile(sys.argv)
-    device = torch.device(hparams['train_device'].value)
-    if device == 'cuda': torch.cuda.empty_cache()    #Empty GPU Cache before Training starts
-    writer = SummaryWriter("Logs/Runs")
+    # Set proper device
+    train_device = torch.device(hparams['train_device'].value)
+    if train_device == 'cuda': torch.cuda.empty_cache()    #Empty GPU Cache before Training starts
+    # Load Data
     train_loader, val_loader, test_loader = dl.loadData(hparams)
-    model = ml.pickModel(hparams)
-    # or Load model
-    #TODO
+    # Pick Model
+    model = ml.pickModel(hparams).to(train_device)
+    # Pick Other Elements
     criterion = ml.pickCriterion(hparams)
     optimizer = ml.pickOptimizer(model,hparams)
-    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['train_scheduler_list'],gamma=0.75)
+    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
+    # Add tensorboard writer
+    writer = SummaryWriter("Logs/Runs") #TODO make use of it
+    # Declare range of epochs to iterate
+    max_epoch = hparams['max_epoch']
+    min_epoch = 0
+    # Prepare Save dir
+    ml.savePrepareDir(hparams)
+    # Load model if required
+    if hparams['load_model']:
+        load_params = ml.loadModel(model,optimizer,scheduler,train_device,hparams)
+        if "min_epoch" in load_params:
+            min_epoch = load_params["current_epoch"]
 
-    model.to(device)
-    if hparams['train_single_batch_test'] is True:
+    # Alternative single batch test (to check if network will over fit)
+    if hparams['single_batch_test'] is True:
         # Preform Single Batch Test
         train_loader = [next(iter(train_loader))]
         print("Single Batch Test Chosen")
 
-    max_epoch = hparams['train_max_epoch']
-    for epoch in range(max_epoch):
-        print('\n','Epoch', epoch+1)
+    # Track best acc for smarter savepoint creation
+    best_acc = 0
+    # Measure training time
+    train_time = time.perf_counter()
+
+    # Start Training
+    for epoch in range(min_epoch,max_epoch):
+        print('\nEpoch', epoch)
         print("Learning rate = %1.5f" % scheduler.get_last_lr().pop())
-        #Train one epoch
-        model.train()
+        # Defines statistical variables
+        acc = ut.AverageMeter('Accuracy', ':6.2f')
+        acc2 = ut.AverageMeter('Top 2 Accuracy', ':6.2f')
+        acc3 = ut.AverageMeter('Top 3 Accuracy', ':6.2f')
+        avg_loss = ut.AverageMeter('Loss', '1.5f')
+        # define useful variables
         multi_batch_loss = 0.0
-        grad_per_batch_const = 8 #TODO
+        grad_per_batch= hparams["grad_per_batch"]
+        # Measure one epoch time
+        epoch_time = time.perf_counter()
+        # Train one epoch
+        model.train()
         for i, data in enumerate(train_loader):
-            inputs = torch.autograd.Variable(data['image'].to(device, non_blocking=True))
-            labels = torch.autograd.Variable(data['label'].to(device, non_blocking=True))
+            inputs = torch.autograd.Variable(data['image'].to(train_device, non_blocking=True))
+            labels = torch.autograd.Variable(data['label'].to(train_device, non_blocking=True))
             with torch.set_grad_enabled(True):
                 # Calculate Network Function (what Network thinks of this image)
-                output = model(inputs)
+                outputs = model(inputs)
                 # Calculate loss
-                loss = criterion(output, labels)
-                # Backpropagate loss
+                loss = criterion(outputs, labels)
+                # Back propagate loss
                 loss.backward()
-                multi_batch_loss += loss;
-                if ((i + 1) % multi_batch_loss) == 0:
+                multi_batch_loss += loss
+                # Calculate, minding gradient batch accumulation
+                if ((i + 1) % grad_per_batch) == 0 or hparams['single_batch_test'] is True:
                     # Normalize loss to account for batch accumulation
-                    multi_batch_loss = multi_batch_loss / multi_batch_loss
+                    multi_batch_loss = multi_batch_loss / grad_per_batch
                     # Clipping the gradient
                     clip_grad_norm_(model.parameters(), max_norm=1)
                     # Update the weighs
@@ -61,32 +93,63 @@ def main():
                     # Resets multi batch loss sum
                     multi_batch_loss = 0.0
                 # Calculate Accuracy
+                c_acc, c_acc2, c_acc3 = eva.accuracy(outputs,labels,topk=(1,2,3))
                 # Update Statistics
-                # TODO
-        # Print Results per epoch
-        # TODO
+                acc.update(c_acc[0],inputs.size(0))
+                acc2.update(c_acc2[0], inputs.size(0))
+                acc3.update(c_acc3[0], inputs.size(0))
+                avg_loss.update(loss,inputs.size(0)) #TODO check if loss is correct!
+        # Print Result for One Epoch of Training
+        print('Epoch {epoch:d}:  *  | Loss {avg_loss.avg:.3f} | Accuracy {acc.avg:.3f} | In Top 2 {acc2.avg:.3f} | In Top 3 {acc3.avg:.3f} | Used Time {epoch_time:.2f} s'
+              .format(epoch=epoch,acc=acc, acc2=acc2, acc3=acc3, avg_loss=avg_loss, epoch_time=time.perf_counter() - epoch_time))
         # Stepping scheduler
         scheduler.step()
 
         # Evaluate in some epochs:
-        epoch_per_eval_const = 10 #TODO
-        if (epoch + 1) % epoch_per_eval_const == 0:
+        epoch_per_eval = hparams["epoch_per_eval"]
+        if epoch % epoch_per_eval == 0 and epoch != 0:
             model.eval()
             evaluation_time = time.perf_counter()
-            # Evaluate
-            # TODO
+            # Evaluate on valset
+            loss_avg, (acc_avg, acc2_avg, acc3_avg) = eva.evaluate(model,criterion,val_loader,train_device,hparams) #TODO unpack accuracies
+            if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
-            # TODO
-        print('Epoch ' + str(epoch + 1) + ' completed')
+            always_save = hparams["always_save"]
+            if best_acc >= acc_avg.avg or always_save:
+                best_acc = acc_avg.avg if best_acc >= acc_avg.avg else best_acc
+                save_params = {"current_epoch":epoch,"current_acc":acc_avg.avg,"current_loss":loss_avg.avg}
+                ml.saveModel(model,optimizer,scheduler,hparams,save_params)
+                print("Saved model on epoch %d" % epoch)
+
+            # Print Statistics
+            print('Evaluation on epoch %d accuracy on all validation images, %2.2f' % (epoch, acc_avg.avg))
+            print('Top 2 on epoch %d on all validation images, %2.2f' % (epoch, acc2_avg.avg))
+            print('Top 3 on epoch %d on all validation images, %2.2f' % (epoch, acc3_avg.avg))
+            print('Average loss on epoch %d on all validation images, %2.2f' % (epoch,loss_avg.avg))
+            print('Evaluation on epoch %d took %.2f s' % (epoch, time.perf_counter() - evaluation_time))
+        print('Epoch ' + str(epoch) + ' completed')
 
     print("\nTraining concluded\n")
     model.eval()
-    # Post Training Evaluation
-    # TODO
-    # Print Stats
-    # TODO
+    # Post Training Evaluation on valset (for comparisons)
+    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg) = eva.evaluate(model,criterion,val_loader,train_device,hparams)
+    print("Evaluation on validation set")
+    print('Evaluation accuracy at the end on all validation images, %2.2f' % vacc_avg.avg)
+    print('Top 2 at the end on all validation images, %2.2f' % vacc2_avg.avg)
+    print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg)
+    print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg)
+    # Post Training Evaluation on testset (for true accuracy)
+    print("\nEvaluation on test set")
+    tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
+    print('Evaluation accuracy on all test images, %2.2f' % tacc_avg.avg)
+    print('Top 2 at the end on all test images, %2.2f' % tacc2_avg.avg)
+    print('Top 3 at the end on all test images, %2.2f' % tacc3_avg.avg)
+    print('Average loss on all test images, %2.2f' % tloss_avg.avg)
+    print("\nFinished Training\n")
     # Save Model
-    # TODO
+    save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg, "current_loss": vloss_avg}
+    ml.saveModel(model, optimizer, scheduler, hparams, save_params)
+    print("Saved model on epoch %d at the end ot training" % max_epoch)
     print("Bye")
 
 

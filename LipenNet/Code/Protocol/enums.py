@@ -23,7 +23,8 @@ class OptimizerType(Enum):
 
 
 class ModelType(Enum):
-    A :str = "A"  #TODO
+    Resnet18_pretrained :str = "Resnet18_pretrained"
+    Resnet18 : str = "Resnet18"
 
 
 class AugmentationType(Enum):

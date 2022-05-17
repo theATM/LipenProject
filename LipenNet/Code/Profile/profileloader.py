@@ -7,10 +7,11 @@ import Code.Protocol.enums as en
 
 DEFAULT_PROFILE_DIR_PATH = "Code/Profile/Profiles/"
 
+
 # noinspection PyTypedDict
 class Hparams(TypedDict):
     #HParams file (saved form input argument)
-    profile_file : str | None
+    profile_file : str | None                           #Filled automatically
     #Dataset Parameters (paths & names)
     data_dir : str | None                               #Data directory name (folder in which are datasets):
     dataset_dir : str | None                            #Chosen Dataset Directory
@@ -25,21 +26,26 @@ class Hparams(TypedDict):
     test_batch_size: int | None
 
     #Load Params
-    load_model : bool| None                             #Filled automatically (pass loaded model as run param)
+    load_model : bool| None                             #Filled automatically (pass loadable (with path) model as run param)
     load_model_path : str | None                        #Filled automatically
+    save_dir_path : str | None                          #Directory where models are saved (must be set manually)
+    always_save : bool | None
 
     #Training Parameters
-    train_initial_learning_rate: float | None
-    train_scheduler_list: list[int] | None
-    train_single_batch_test: bool | None
-    train_max_epoch: int | None
+    initial_learning_rate: float | None
+    scheduler_list: list[int] | None
+    scheduler_gamma : float | None
+    grad_per_batch : int | None
+    single_batch_test: bool | None
+    max_epoch: int | None
     train_device: en.Device | None
-    train_model: en.ModelType | None
-    train_optimizer : en.OptimizerType | None
-    train_criterion : en.CriterionType | None
+    model: en.ModelType | None
+    optimizer : en.OptimizerType | None
+    criterion : en.CriterionType | None
 
     #Eval Parameters
     val_device: en.Device | None
+    epoch_per_eval : int | None
 
 
     #Normalizaton Parameters
@@ -108,7 +114,7 @@ def convertStrToType(key,value):
     elif set_type == float:
         return float(value)
     elif set_type == bool:
-        return bool(value)
+        return value == "True"
     elif set_type == list[float]:
         return list(map(float,(value[1:-1].split(","))))
     elif set_type == list[int]:
@@ -158,19 +164,24 @@ __hparams  : Hparams = \
     #Load Params
     "load_model" : None,
     "load_model_path" : None,
+    "save_dir_path" : None,
+    "always_save" : None,
 
     #Training Params
-    "train_initial_learning_rate" : None,
-    "train_scheduler_list" : None,
-    "train_single_batch_test": None,
-    "train_max_epoch":None,
+    "initial_learning_rate" : None,
+    "scheduler_list" : None,
+    "scheduler_gamma" : None,
+    "grad_per_batch" : None,
+    "single_batch_test": None,
+    "max_epoch":None,
     "train_device" :None,
-    "train_model": None,
-    "train_optimizer": None,
-    "train_criterion": None,
+    "model": None,
+    "optimizer": None,
+    "criterion": None,
 
     #Eval Parameters
     "val_device":  None,
+    "epoch_per_eval": None,
 
     # Normalizaton Parameters
     "clean_dataset_mean": None,
