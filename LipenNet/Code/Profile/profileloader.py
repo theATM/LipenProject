@@ -252,11 +252,6 @@ def loadProfile(arguments):
         print("Wrong argument passed. " + profile_path+ " Not a file. Pass the profile file name")
         sys.exit(err.PROFILE_WRONG_PARAM_NOT_FILE)
     with open(profile_path) as profile_file:
-        #Save profile path to dict
-        __hparams["profile_file"] = profile_path
-        #Save info if there is a file with loadable model
-        __hparams['load_model'] = True if load_model_path != "" else False
-        __hparams['load_model_path'] = load_model_path
         #Check every line in profile file
         for line in profile_file:
             #ignore empty lines
@@ -277,6 +272,11 @@ def loadProfile(arguments):
             else:
                 print("Wrong key in profile.txt -> "+ parameter_key)
                 sys.exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
+        #Save profile path to dict
+        __hparams["profile_file"] = profile_path
+        #Save info if there is a file with loadable model
+        __hparams['load_model'] = True if load_model_path != "" else False
+        __hparams['load_model_path'] = load_model_path
         #Check if all hparams are set:
         if any( elem is None for elem in __hparams.values()):
             print("Not all parameters set!")

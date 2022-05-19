@@ -38,3 +38,10 @@ class Device(Enum):
     Cuda :str = "cuda"
     Cpu :str = "cpu"
 
+
+class SavingMode(Enum):
+    all_save = "all_save"
+    best_save = "best_save"
+    last_save = "last_save"
+    none_save = "mone_save"
+
