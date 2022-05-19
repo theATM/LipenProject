@@ -42,6 +42,7 @@ class Hparams(TypedDict):
     model: en.ModelType | None
     optimizer : en.OptimizerType | None
     criterion : en.CriterionType | None
+    save_mode : en.SavingMode | None
 
     #Eval Parameters
     val_device: en.Device | None
@@ -135,6 +136,8 @@ def convertStrToType(key,value):
         return en.OptimizerType[value]
     elif set_type == en.CriterionType:
         return en.CriterionType[value]
+    elif set_type == en.SavingMode:
+        return en.SavingMode[value]
 
     else:
         print("Unimplemented Type Detected! -> " + str(set_type))
@@ -178,6 +181,7 @@ __hparams  : Hparams = \
     "model": None,
     "optimizer": None,
     "criterion": None,
+    "save_mode" : None,
 
     #Eval Parameters
     "val_device":  None,

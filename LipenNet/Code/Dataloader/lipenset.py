@@ -48,7 +48,7 @@ class Lipenset(Dataset):
                 self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Online, hparams=hparams)
 
         self.images :list[dict] = []
-        image_files = dt.getImageFiles(self.dataset_path,self.dataset_path)
+        image_files = dt.getImageFiles(self.dataset_path,self.dataset_path) #TODO - TypeError: an integer is required - warning
         self.image_amount = len(image_files)
         if self.image_amount == 0:
             print("No Images were founded")
@@ -62,7 +62,9 @@ class Lipenset(Dataset):
                     if name == "Name": continue
                     if name != image_file.split("/")[-2]+"/"+image_file.split("/")[-1]: continue
                     label = int(label_line.split(";")[1])
-                    image_dict = {"label":label,"path":image_file}
+                    sub_label = int(label_line.split(";")[3])
+                    extra_label = int(label_line.split(";")[3])
+                    image_dict = {"label":label,"path":image_file,"extra":extra_label}
                     self.images.append(image_dict)
         if len(self.images) != self.image_amount:
             print("Different image number in csv and dirs")

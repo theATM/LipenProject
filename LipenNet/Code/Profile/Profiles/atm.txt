@@ -27,10 +27,11 @@ scheduler_gamma=0.75
 grad_per_batch = 8
 single_batch_test= False
 max_epoch = 250
-train_device= Cuda
+train_device = Cuda
 model= Resnet18_pretrained
 optimizer = Adam
 criterion = CrossEntropy
+save_mode = all_save
 
 #Eval Parameters
 val_device =  Cpu

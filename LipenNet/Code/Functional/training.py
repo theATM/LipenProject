@@ -135,7 +135,7 @@ def train(
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
 
-           if save_mode != en.SavingMode.none_save and save_mode != en.SavingMode.last_save:
+            if save_mode != en.SavingMode.none_save and save_mode != en.SavingMode.last_save:
                 if save_mode == en.SavingMode.all_save or (save_mode == en.SavingMode.best_save and best_acc >= acc_avg.avg):
                     best_acc = acc_avg.avg if best_acc >= acc_avg.avg else best_acc
                     save_params = {"current_epoch":epoch,"current_acc":acc_avg.avg,"current_loss":loss_avg.avg}
