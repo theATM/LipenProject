@@ -6,6 +6,7 @@ from datetime import datetime
 from Code.Profile.profileloader import Hparams
 import os
 import shutil
+from typing import Optional
 
 
 def pickModel(hparams:Hparams):
@@ -96,6 +97,8 @@ def pickCriterion(hparams:Hparams):
     match hparams['criterion']:
         case en.CriterionType.CrossEntropy:
             criterion = torch.nn.CrossEntropyLoss()
+        case en.CriterionType.WeightedCrossEntropyLoss:
+            criterion = WeightedCrossEntropyLoss(weight=torch.FloatTensor([1.0,1.0,1.0,1.0,1.0,1.0]))
     return criterion
 
 
@@ -105,3 +108,14 @@ def pickOptimizer(model,hparams:Hparams):
         case en.OptimizerType.Adam:
             optimizer = torch.optim.Adam(model.parameters(),lr=hparams['initial_learning_rate'])
     return optimizer
+
+
+class WeightedCrossEntropyLoss(torch.nn.CrossEntropyLoss):
+    #https://stackoverflow.com/questions/67730325/using-weights-in-crossentropyloss-and-bceloss-pytorch
+    def __init__(self, weight: torch.Tensor):
+        super().__init__(weight,reduction='none')
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor, weights:torch.Tensor) -> torch.Tensor:
+        intermediate_losses = super(torch.nn.CrossEntropyLoss, self).forward(input,target)
+        final_loss = torch.mean(weights * intermediate_losses)
+

@@ -64,7 +64,7 @@ class Lipenset(Dataset):
                     label = int(label_line.split(";")[1])
                     sub_label = int(label_line.split(";")[3])
                     extra_label = int(label_line.split(";")[3])
-                    image_dict = {"label":label,"path":image_file,"extra":extra_label}
+                    image_dict = {"label":label,"path":image_file,"sub":sub_label,"extra":extra_label}
                     self.images.append(image_dict)
         if len(self.images) != self.image_amount:
             print("Different image number in csv and dirs")
@@ -84,17 +84,32 @@ class Lipenset(Dataset):
         image = self.transform_tool.transform(imagep)
         image_dict["image"] = image
         imagep.close()
+        #Add weights
         return image_dict
 
 
 
-def loadData(hparams : Hparams):
-    trainset = Lipenset(hparams,en.DatasetType.Trainset,shuffle=True)
-    valset = Lipenset(hparams, en.DatasetType.ValSet, shuffle=False)
-    testset = Lipenset(hparams, en.DatasetType.Testset, shuffle=False)
+def loadData(hparams : Hparams, load_train:bool = False,load_val:bool= False,load_test:bool= False):
+    trainset = None
+    valset = None
+    testset = None
 
-    train_loader = DataLoader(trainset, batch_size=hparams['train_batch_size'], shuffle=True)
-    eval_loader = DataLoader(valset, batch_size=hparams['val_batch_size'], shuffle=False)
-    test_loader = DataLoader(testset, batch_size=hparams['test_batch_size'], shuffle=False)
+    if load_train:
+        trainset = Lipenset(hparams,en.DatasetType.Trainset,shuffle=True)
+    if load_val:
+        valset = Lipenset(hparams, en.DatasetType.ValSet, shuffle=False)
+    if load_test:
+        testset = Lipenset(hparams, en.DatasetType.Testset, shuffle=False)
+
+    train_loader = None
+    eval_loader = None
+    test_loader = None
+
+    if load_train:
+        train_loader = DataLoader(trainset, batch_size=hparams['train_batch_size'], shuffle=True)
+    if load_val:
+        eval_loader = DataLoader(valset, batch_size=hparams['val_batch_size'], shuffle=False)
+    if load_test:
+        test_loader = DataLoader(testset, batch_size=hparams['test_batch_size'], shuffle=False)
 
     return train_loader, eval_loader, test_loader

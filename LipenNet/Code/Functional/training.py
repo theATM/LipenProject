@@ -23,7 +23,7 @@ def main():
     train_device = torch.device(hparams['train_device'].value)
     if train_device == 'cuda': torch.cuda.empty_cache()    #Empty GPU Cache before Training starts
     # Load Data
-    train_loader, val_loader, test_loader = dl.loadData(hparams)
+    train_loader, val_loader, _ = dl.loadData(hparams,load_train=True,load_val=True)
     # Pick Model
     model = ml.pickModel(hparams).to(train_device)
     # Pick Other Elements
@@ -54,11 +54,20 @@ def main():
         # Preform Single Batch Test
         train_loader = [next(iter(train_loader))]
         print("Single Batch Test Chosen")
+    single_batch_test=hparams['single_batch_test']
+    #Run training
+    results = train(hparams=hparams,train_device=train_device,
+                    train_loader=train_loader,val_loader=val_loader,
+                    model=model,criterion=criterion,optimizer=optimizer,scheduler=scheduler,
+                    min_epoch=min_epoch,max_epoch=max_epoch,epoch_per_eval=epoch_per_eval,grad_per_batch=grad_per_batch,
+                    single_batch_test=single_batch_test, writer = writer,
+                    interactive=True,save_mode=save_mode)
+
 
 
 def train(
             hparams : pl.Hparams, train_device : str,
-            train_loader, val_loader, test_loader,
+            train_loader, val_loader,
             model, criterion, optimizer, scheduler,
             min_epoch, max_epoch, epoch_per_eval, grad_per_batch,
             single_batch_test : bool, writer,
@@ -94,6 +103,9 @@ def train(
             with torch.set_grad_enabled(True):
                 # Calculate Network Function (what Network thinks of this image)
                 outputs = model(inputs)
+                # Set class weights
+                #TODO
+                
                 # Calculate loss
                 loss = criterion(outputs, labels)
                 # Back propagate loss
@@ -157,8 +169,8 @@ def train(
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
     vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg) = eva.evaluate(model,criterion,val_loader,train_device,hparams)
-    # Post Training Evaluation on testset (for true accuracy)
-    tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
+    # Post Training Evaluation on testset (for true accuracy) - do not do that
+    # tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
     if interactive:
         #Print results on eval set
         print("\nTraining concluded\n")
@@ -167,13 +179,13 @@ def train(
         print('Top 2 at the end on all validation images, %2.2f' % vacc2_avg.avg)
         print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg)
         print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg)
-        # Print results on test set
-        print("\nEvaluation on test set")
-        print('Evaluation accuracy on all test images, %2.2f' % tacc_avg.avg)
-        print('Top 2 at the end on all test images, %2.2f' % tacc2_avg.avg)
-        print('Top 3 at the end on all test images, %2.2f' % tacc3_avg.avg)
-        print('Average loss on all test images, %2.2f' % tloss_avg.avg)
-        print("\nFinished Training\n")
+        # Print results on test set - do not do that
+        #print("\nEvaluation on test set")
+        #print('Evaluation accuracy on all test images, %2.2f' % tacc_avg.avg)
+        #print('Top 2 at the end on all test images, %2.2f' % tacc2_avg.avg)
+        #print('Top 3 at the end on all test images, %2.2f' % tacc3_avg.avg)
+        #print('Average loss on all test images, %2.2f' % tloss_avg.avg)
+        #print("\nFinished Training\n")
     # Save Last Model
     if save_mode != en.SavingMode.none_save:
         save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg, "current_loss": vloss_avg}
