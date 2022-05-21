@@ -90,9 +90,7 @@ def saveModel(model,optimizer,scheduler,hparams:Hparams,save_params:dict):
 
 def savePrepareDir(hparams:Hparams):
     #Create path
-    now = datetime.now()  # Used to differentiate saved models
-    now_str = now.strftime("%d.%m.%Y_%H:%M")
-    save_dir_name = str(hparams["model"].value) + "_" + now_str
+    save_dir_name = getModelName(hparams)
     hparams['save_dir_path'] += save_dir_name + "/"
     if not os.path.exists(hparams['save_dir_path'][:-1]):
         os.makedirs(hparams['save_dir_path'][:-1])
@@ -100,6 +98,19 @@ def savePrepareDir(hparams:Hparams):
     profile_file_name = profile_file_name.split(".")[0] +"_" + save_dir_name +"."+ profile_file_name.split(".")[1]
     profile_file_path = hparams['save_dir_path'] + profile_file_name
     shutil.copyfile(hparams["profile_file"],profile_file_path)
+
+
+def getModelName(hparams:Hparams):
+    if 'save_dir_name' not in hparams:
+        now = datetime.now()  # Used to differentiate saved models
+        now_str = now.strftime("%d.%m.%Y_%H:%M")
+        save_dir_name = str(hparams["model"].value) + "_" + now_str
+        hparams['save_dir_name'] = save_dir_name
+    return hparams['save_dir_name']
+
+
+
+
 
 
 
