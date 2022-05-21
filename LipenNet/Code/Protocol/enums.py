@@ -21,6 +21,11 @@ class CriterionType(Enum):
     WeightedCrossEntropy : str = "WeightedCrossEntropy"
 
 
+class CriterionPurpose(Enum):
+    TrainCriterion  = 0
+    EvalCriterion = 0
+
+
 class OptimizerType(Enum):
     Adam :str = "Adam"
     AdamW: str = "AdamW"
@@ -55,4 +60,7 @@ class ReductionMode(Enum):
     none = 'none'
     mean = "mean"
     sum = "sum"
+
+
+
 
