@@ -30,8 +30,8 @@ def main():
     criterion = ml.pickCriterion(hparams)
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
-    # Add tensorboard writer
-    writer = SummaryWriter("Logs/Runs") #TODO make use of it
+    # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Runs)
+    writer = SummaryWriter("Logs/Runs/"+ml.getModelName(hparams)) #SummaryWriter("Logs/Runs/"+hparams['save_dir_path'].split("/")[-1]+"/")
     # Declare range of epochs to iterate
     max_epoch = hparams['max_epoch']
     min_epoch = 0
