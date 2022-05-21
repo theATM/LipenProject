@@ -114,7 +114,8 @@ def train(
                 if reduction_mode == en.ReductionMode.none:
                     #Load extras:
                     extra = torch.autograd.Variable(data['extra'].to(train_device, non_blocking=True))
-                    hard = (4 * ((16 & extra) >> 4)) | 1 - ((16 & extra) >> 4)
+                    tmp = ((16 & extra) >> 4)
+                    hard = (4 * tmp) | 1 - tmp
                     # recalculate class weights
                     weights = class_weights[labels] * hard
                     intermediate_losses = criterion(outputs, labels)

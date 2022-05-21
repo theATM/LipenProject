@@ -23,7 +23,7 @@ class CriterionType(Enum):
 
 class CriterionPurpose(Enum):
     TrainCriterion  = 0
-    EvalCriterion = 0
+    EvalCriterion = 1
 
 
 class OptimizerType(Enum):
