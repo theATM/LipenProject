@@ -46,6 +46,7 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
     y_pred_all = []
 
     class_names = ["Triangle", "Rules", "Rubber", "Pencil", "Pen", "None"]
+    class_names_pred = [class_name + ".P" for class_name in class_names]
     classes_count = len(class_names)
 
     with torch.no_grad():
@@ -66,8 +67,9 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
             #TODO other metrics (Fscore, Confusion Matrix, ROC) and check exisitong ones
 
     conf_matrix = confusion_matrix(y_true_all, y_pred_all)
-    df_cm = pd.DataFrame(conf_matrix/np.sum(conf_matrix) * classes_count, index=[i for i in class_names],
-                         columns=[i for i in class_names])
+    df_cm = pd.DataFrame(conf_matrix, index=[i for i in class_names],
+                         columns=[i for i in class_names_pred])
+    #df_cm = df_cm.div(df_cm.sum(axis=1), axis=0)
     conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
 
     return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix_heatmap
