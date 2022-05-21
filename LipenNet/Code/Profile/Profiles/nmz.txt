@@ -4,8 +4,8 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = CleanDataset
-dataset_name = CleanDataset
+dataset_dir = UniformDatasetAugmented
+dataset_name = UniformDatasetAugmented
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
@@ -22,7 +22,7 @@ save_mode = all_save
 ############################################
 # Training params
 initial_learning_rate= 0.00001
-weight_decay =  20
+weight_decay =  2
 frozen_initial_layers = 3
 scheduler_list= [50,100,150,200]
 scheduler_gamma=0.75
