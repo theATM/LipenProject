@@ -1,7 +1,6 @@
 import torch
 import sys
-import scipy as sp
-import numpy as np
+import math
 import pandas as pd
 import seaborn as sn
 from sklearn.metrics import confusion_matrix
@@ -76,19 +75,30 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
 
     precision = 0
     recall = 0
+    f1_score = 0
+
+    class_precisions = []
+    class_recalls = []
 
     cm_sum = conf_matrix.sum()
-    cm_row_sum = df_cm.sum('index')
-    cm_col_sum = df_cm.sum('columns')
-    cm_diag_sum = np.diag(conf_matrix).sum()
+    cm_col_sum = df_cm.sum('index')
+    cm_row_sum = df_cm.sum('columns')
 
-    #for i in range(classes_count):
-    #    tp = conf_matrix[i][i]
-    #    tn = cm_diag_sum[i] - tp
-    #    fp = cm_col_sum[i] - tp
-    #    fn = cm_row_sum[i] - tp
-    #    weight = cm_row_sum[i] / cm_sum
-    #    precision += (tp / (tp+fp)) * weight
+    for i in range(classes_count):
+        tp = conf_matrix[i][i]
+        fp = cm_col_sum[i] - tp
+        fn = cm_row_sum[i] - tp
+        weight = cm_row_sum[i] / cm_sum
+        class_precision = tp / (tp+fp)
+        class_recall = tp / (tp + fn)
+        if tp != 0 or fp != 0:
+            precision += class_precision * weight
+            class_precisions.append(class_precision)
+        if tp != 0 or fn != 0:
+            recall += class_recall * weight
+            class_recalls.append(class_precision)
+        if not math.isnan(class_precision) and not math.isnan(class_recall):
+            f1_score += (2 * class_precision * class_recall / (class_precision + class_recall)) * weight
 
     if not __debug__:
         return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix_heatmap
