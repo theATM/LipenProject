@@ -65,11 +65,11 @@ class Hparams(TypedDict):
     merged_dataset_mean: list[float] | None
     merged_dataset_std:  list[float] | None
 
-    unified_dataset_augmented_mean: list[float] | None
-    unified_dataset_augmented_std: list[float] | None
+    unified_augmented_dataset_mean: list[float] | None
+    unified_augmented_dataset_std: list[float] | None
 
-    merged_dataset_augmented_mean: list[float] | None
-    merged_dataset_augmented_std: list[float] | None
+    merged_augmented_dataset_mean: list[float] | None
+    merged_augmented_dataset_std: list[float] | None
 
 
     #Augmentation Parameters
@@ -210,11 +210,11 @@ __hparams  : Hparams = \
     "merged_dataset_mean":   None,
     "merged_dataset_std":   None,
 
-    "unified_dataset_augmented_mean":  None,
-    "unified_dataset_augmented_std":   None,
+    "unified_augmented_dataset_mean":  None,
+    "unified_augmented_dataset_std":   None,
 
-    "merged_dataset_augmented_mean":   None,
-    "merged_dataset_augmented_std":   None,
+    "merged_augmented_dataset_mean":   None,
+    "merged_augmented_dataset_std":   None,
 
     # Augmentation Parameters
     "augmentation_type":  None,
