@@ -41,6 +41,10 @@ def main():
     epoch_per_eval = hparams["epoch_per_eval"]
     # choose save model mode
     save_mode = hparams["save_mode"]
+    # Get Criterion weights
+    class_weights = torch.tensor(hparams[hparams['dataset_name'].value + '_class_weights']).to(train_device)
+    # Get criterion reductin mode
+    reduction_mode =  hparams['reduction_mode']
     # Prepare Save dir
     ml.savePrepareDir(hparams)
     # Load model if required
@@ -60,7 +64,7 @@ def main():
                     train_loader=train_loader,val_loader=val_loader,
                     model=model,criterion=criterion,optimizer=optimizer,scheduler=scheduler,
                     min_epoch=min_epoch,max_epoch=max_epoch,epoch_per_eval=epoch_per_eval,grad_per_batch=grad_per_batch,
-                    single_batch_test=single_batch_test, writer = writer,
+                    single_batch_test=single_batch_test, writer = writer, class_weights=class_weights,reduction_mode=reduction_mode,
                     interactive=True,save_mode=save_mode)
 
 
@@ -70,7 +74,7 @@ def train(
             train_loader, val_loader,
             model, criterion, optimizer, scheduler,
             min_epoch, max_epoch, epoch_per_eval, grad_per_batch,
-            single_batch_test : bool, writer,
+            single_batch_test : bool, writer, class_weights,reduction_mode,
             interactive: bool, save_mode : en.SavingMode
 
          ):
@@ -79,12 +83,12 @@ def train(
     best_acc = 0
     # Measure training time
     train_time = time.perf_counter()
-
+    old_criterion = torch.nn.CrossEntropyLoss()
     # Start Training
     for epoch in range(min_epoch,max_epoch):
         if interactive:
             print('\nEpoch', epoch)
-            print("Learning rate = %1.5f" % scheduler.get_last_lr().pop())
+            print("Learning rate = %1.10f" % scheduler.get_last_lr().pop())
         # Defines statistical variables
         acc = ut.AverageMeter('Accuracy', ':6.2f')
         acc2 = ut.AverageMeter('Top 2 Accuracy', ':6.2f')
@@ -103,11 +107,14 @@ def train(
             with torch.set_grad_enabled(True):
                 # Calculate Network Function (what Network thinks of this image)
                 outputs = model(inputs)
-                # Set class weights
-                #TODO
-                
                 # Calculate loss
-                loss = criterion(outputs, labels)
+                if reduction_mode == en.ReductionMode.none:
+                    # recalculate class weights
+                    weights = class_weights
+                    intermediate_losses = criterion(outputs, labels)
+                    loss = torch.mean(weights * intermediate_losses)
+                else:
+                    loss = criterion(outputs, labels)
                 # Back propagate loss
                 loss.backward()
                 multi_batch_loss += loss
@@ -130,6 +137,9 @@ def train(
                 acc2.update(c_acc2[0], inputs.size(0))
                 acc3.update(c_acc3[0], inputs.size(0))
                 avg_loss.update(loss,inputs.size(0)) #TODO check if loss is correct!
+                if writer is not None:
+                    writer.add_scalar("Loss/train",avg_loss.avg , epoch)
+                    writer.add_scalar("Accuracy/train", acc.avg, epoch)
         # Print Result for One Epoch of Training
         if interactive:
             print('Epoch {epoch:d}:  *  | Loss {avg_loss.avg:.3f} | Accuracy {acc.avg:.3f} | In Top 2 {acc2.avg:.3f} | In Top 3 {acc3.avg:.3f} | Used Time {epoch_time:.2f} s'
@@ -155,6 +165,12 @@ def train(
                     if interactive:
                         print("Saved model on epoch %d" % epoch)
 
+            # Record Statistics
+            if writer is not None:
+                writer.add_scalar("Loss/eval", loss_avg.avg, epoch)
+                writer.add_scalar("Accuracy/eval", acc_avg.avg, epoch)
+                writer.add_scalar("Top2Acc/eval", acc2_avg.avg, epoch)
+                writer.add_scalar("Top3Acc/eval", acc3_avg.avg, epoch)
             # Print Statistics
             if interactive:
                 print('Evaluation on epoch %d accuracy on all validation images, %2.2f' % (epoch, acc_avg.avg))

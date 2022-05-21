@@ -46,3 +46,9 @@ class SavingMode(Enum):
     last_save = "last_save"
     none_save = "mone_save"
 
+
+class ReductionMode(Enum):
+    none = 'none'
+    mean = "mean"
+    sum = "sum"
+
