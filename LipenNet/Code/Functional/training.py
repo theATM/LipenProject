@@ -183,6 +183,9 @@ def train(
                 writer.add_scalar("Accuracy/eval", acc_val.avg, epoch)
                 writer.add_scalar("Top2Acc/eval", acc2_val.avg, epoch)
                 writer.add_scalar("Top3Acc/eval", acc3_val.avg, epoch)
+                writer.add_scalar("Precision/eval", precision, epoch)
+                writer.add_scalar("Recall/eval", recall, epoch)
+                writer.add_scalar("F1 Score/eval", f1_score, epoch)
                 if not sys.gettrace():
                     writer.add_figure("Confusion matrix", conf_matrix, epoch)
             # Print Statistics
