@@ -13,12 +13,14 @@ def pickModel(hparams:Hparams):
     model = None
     match hparams['model']:
         case en.ModelType.Resnet18_pretrained:
-            model = torchvision.models.resnet18(pretrained=True,)
-            model.fc.in_features = torch.nn.Linear(model.fc.in_features, 6) #add last layer
+            # load pretrained resnet18 model
+            model = torchvision.models.resnet18(pretrained=True)
+            # add fresh last layer with number of classes
+            model.fc = torch.nn.Sequential(torch.nn.Linear(model.fc.in_features, 6))
 
         case en.ModelType.Resnet18:
-            model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=False)
-            model.fc.in_features = torch.nn.Linear(model.fc.in_features, 6)  # add last layer
+            # load resnet 18 model with fresh weights and proper class number
+            model = torchvision.models.resnet18(pretrained=False, num_classes=6)
     return model
 
 
@@ -94,11 +96,13 @@ def savePrepareDir(hparams:Hparams):
 
 def pickCriterion(hparams:Hparams):
     criterion = None
+    weights =  torch.tensor(hparams[hparams['dataset_name'].value + '_class_weights'])
+    reduction = hparams['reduction_mode']
     match hparams['criterion']:
         case en.CriterionType.CrossEntropy:
             criterion = torch.nn.CrossEntropyLoss()
-        case en.CriterionType.WeightedCrossEntropyLoss:
-            criterion = WeightedCrossEntropyLoss(weight=torch.FloatTensor([1.0,1.0,1.0,1.0,1.0,1.0]))
+        case en.CriterionType.WeightedCrossEntropy:
+            criterion = torch.nn.CrossEntropyLoss(weight=weights, reduction=reduction)
     return criterion
 
 
@@ -110,12 +114,12 @@ def pickOptimizer(model,hparams:Hparams):
     return optimizer
 
 
-class WeightedCrossEntropyLoss(torch.nn.CrossEntropyLoss):
-    #https://stackoverflow.com/questions/67730325/using-weights-in-crossentropyloss-and-bceloss-pytorch
-    def __init__(self, weight: torch.Tensor):
-        super().__init__(weight,reduction='none')
-
-    def forward(self, input: torch.Tensor, target: torch.Tensor, weights:torch.Tensor) -> torch.Tensor:
-        intermediate_losses = super(torch.nn.CrossEntropyLoss, self).forward(input,target)
-        final_loss = torch.mean(weights * intermediate_losses)
+#class WeightedCrossEntropyLoss(torch.nn.CrossEntropyLoss):
+#    #https://stackoverflow.com/questions/67730325/using-weights-in-crossentropyloss-and-bceloss-pytorch
+#    def __init__(self, weight: torch.Tensor):
+#        super().__init__(weight,reduction='none')
+#
+#    def forward(self, input: torch.Tensor, target: torch.Tensor, weights:torch.Tensor) -> torch.Tensor:
+#        intermediate_losses = super(torch.nn.CrossEntropyLoss, self).forward(input,target)
+#        final_loss = torch.mean(weights * intermediate_losses)
 

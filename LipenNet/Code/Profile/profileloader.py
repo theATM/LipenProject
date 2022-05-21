@@ -29,7 +29,7 @@ class Hparams(TypedDict):
     load_model : bool| None                             #Filled automatically (pass loadable (with path) model as run param)
     load_model_path : str | None                        #Filled automatically
     save_dir_path : str | None                          #Directory where models are saved (must be set manually)
-    always_save : bool | None
+    save_mode : en.SavingMode | None                    #defines whether to save model during (or after) training
 
     #Training Parameters
     initial_learning_rate: float | None
@@ -42,7 +42,11 @@ class Hparams(TypedDict):
     model: en.ModelType | None
     optimizer : en.OptimizerType | None
     criterion : en.CriterionType | None
-    save_mode : en.SavingMode | None
+    reduction_mode : en.ReductionMode | None
+
+    clean_class_weights : list[float] | None
+    unified_class_weights: list[float] | None
+    merged_class_weights: list[float] | None
 
     #Eval Parameters
     val_device: en.Device | None
@@ -138,6 +142,8 @@ def convertStrToType(key,value):
         return en.CriterionType[value]
     elif set_type == en.SavingMode:
         return en.SavingMode[value]
+    elif set_type == en.ReductionMode:
+        return en.ReductionMode[value]
 
     else:
         print("Unimplemented Type Detected! -> " + str(set_type))
@@ -168,7 +174,7 @@ __hparams  : Hparams = \
     "load_model" : None,
     "load_model_path" : None,
     "save_dir_path" : None,
-    "always_save" : None,
+    "save_mode": None,
 
     #Training Params
     "initial_learning_rate" : None,
@@ -181,7 +187,10 @@ __hparams  : Hparams = \
     "model": None,
     "optimizer": None,
     "criterion": None,
-    "save_mode" : None,
+    "reduction_mode": None,
+    "clean_class_weights": None,
+    "unified_class_weights": None,
+    "merged_class_weights": None,
 
     #Eval Parameters
     "val_device":  None,
