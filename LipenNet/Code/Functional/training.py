@@ -137,10 +137,12 @@ def train(
                 if writer is not None:
                     writer.add_scalar("Loss/train",avg_loss.avg , epoch)
                     writer.add_scalar("Accuracy/train", acc.avg, epoch)
+                    writer.add_scalar("Top2Acc/train", acc2.avg, epoch)
+                    writer.add_scalar("Top3Acc/train", acc3.avg, epoch)
         # Print Result for One Epoch of Training
         if interactive:
             print(end="\n")
-            print('Train | Epoch, {epoch:d} |  *  | Learning rate, {learn_rate:.8f}  | Used Time, {epoch_time:.2f} s |'
+            print('Train | Epoch, {epoch:d} |  *  | Learning rate, {learn_rate:.3e}  | Used Time, {epoch_time:.2f} s |'
                   .format(epoch=epoch,learn_rate=scheduler.get_last_lr().pop(),epoch_time=time.perf_counter() - epoch_time))
             print('Train | Epoch, {epoch:d} |  *  | Loss, {avg_loss.avg:.3f} | Accuracy, {acc.avg:.3f} | In Top 2, {acc2.avg:.3f} | In Top 3, {acc3.avg:.3f} | '
                   .format(epoch=epoch,acc=acc, acc2=acc2, acc3=acc3, avg_loss=avg_loss))
@@ -153,31 +155,29 @@ def train(
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
-            loss_avg, (acc_avg, acc2_avg, acc3_avg) = eva.evaluate(model,criterion,val_loader,train_device,hparams) #TODO unpack accuracies
+            loss_val, (acc_val, acc2_val, acc3_val) = eva.evaluate(model,criterion,val_loader,train_device,hparams) #TODO unpack accuracies
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
             model_saved :bool = False
             if save_mode != en.SavingMode.none_save and save_mode != en.SavingMode.last_save:
-                if save_mode == en.SavingMode.all_save or (save_mode == en.SavingMode.best_save and best_acc >= acc_avg.avg):
-                    best_acc = acc_avg.avg if best_acc >= acc_avg.avg else best_acc
-                    save_params = {"current_epoch":epoch,"current_acc":acc_avg.avg,"current_loss":loss_avg.avg}
+                if save_mode == en.SavingMode.all_save or (save_mode == en.SavingMode.best_save and best_acc >= acc_val.avg):
+                    best_acc = acc_val.avg if best_acc >= acc_val.avg else best_acc
+                    save_params = {"current_epoch":epoch,"current_acc":acc_val.avg,"current_loss":loss_val.avg}
                     ml.saveModel(model,optimizer,scheduler,hparams,save_params)
-                    if interactive:
-                        model_saved = True
-                        print("Saved model on epoch %d" % epoch)
+                    model_saved = True
 
             # Record Statistics
             if writer is not None:
-                writer.add_scalar("Loss/eval", loss_avg.avg, epoch)
-                writer.add_scalar("Accuracy/eval", acc_avg.avg, epoch)
-                writer.add_scalar("Top2Acc/eval", acc2_avg.avg, epoch)
-                writer.add_scalar("Top3Acc/eval", acc3_avg.avg, epoch)
+                writer.add_scalar("Loss/eval", loss_val.avg, epoch)
+                writer.add_scalar("Accuracy/eval", acc_val.avg, epoch)
+                writer.add_scalar("Top2Acc/eval", acc2_val.avg, epoch)
+                writer.add_scalar("Top3Acc/eval", acc3_val.avg, epoch)
             # Print Statistics
             if interactive:
                 print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'
                       .format(epoch=epoch,model_saved=str(model_saved),  epoch_time= time.perf_counter() - evaluation_time))
                 print('Eval  | Epoch, {epoch:d} |  #  | Loss, {loss:.3f} | Accuracy, {acc:.3f} | In Top 2, {acc2:.3f} | In Top 3, {acc3:.3f} |'
-                      .format(epoch=epoch, loss=loss_avg.avg, acc= acc_avg.avg, acc2 =  acc2_avg.avg,  acc3=acc3_avg.avg))
+                      .format(epoch=epoch, loss=loss_val.avg, acc= acc_val.avg, acc2 =  acc2_val.avg,  acc3=acc3_val.avg))
 
 
     model.eval()
