@@ -18,6 +18,7 @@ class DatasetType(Enum):
 
 class CriterionType(Enum):
     CrossEntropy : str = "CrossEntropy"
+    WeightedCrossEntropy : str = "WeightedCrossEntropy"
 
 
 class OptimizerType(Enum):
