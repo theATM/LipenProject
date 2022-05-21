@@ -60,7 +60,7 @@ merged_augmented_dataset_mean = [0.48558735847473145, 0.47484326362609863, 0.463
 merged_augmented_dataset_std = [0.25945240152746896, 0.2553842807377363, 0.258399756926313]
 
 #Augmentation Parameters
-augmentation_type = Without
+augmentation_type = Online
 resize_size = (244,244)
 vertical_flip_prob = 0.3
 horizontal_flip_prob = 0.3
