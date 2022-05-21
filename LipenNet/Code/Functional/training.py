@@ -155,7 +155,10 @@ def train(
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
-            loss_val, (acc_val, acc2_val, acc3_val) = eva.evaluate(model,criterion,val_loader,train_device,hparams) #TODO unpack accuracies
+            loss_val, (acc_val, acc2_val, acc3_val), conf_matrix = eva.evaluate(model,
+                                                                                criterion,
+                                                                                val_loader,
+                                                                                train_device, hparams)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
             model_saved :bool = False
@@ -172,6 +175,7 @@ def train(
                 writer.add_scalar("Accuracy/eval", acc_val.avg, epoch)
                 writer.add_scalar("Top2Acc/eval", acc2_val.avg, epoch)
                 writer.add_scalar("Top3Acc/eval", acc3_val.avg, epoch)
+                writer.add_figure("Confusion matrix", conf_matrix, epoch)
             # Print Statistics
             if interactive:
                 print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'
@@ -182,7 +186,11 @@ def train(
 
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
-    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg) = eva.evaluate(model,criterion,val_loader,train_device,hparams)
+    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), conf_matrix = eva.evaluate(model,
+                                                                            criterion,
+                                                                            val_loader,
+                                                                            train_device,
+                                                                            hparams)
     # Post Training Evaluation on testset (for true accuracy) - do not do that
     # tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
     if interactive:
@@ -193,6 +201,8 @@ def train(
         print('Top 2 at the end on all validation images, %2.2f' % vacc2_avg.avg)
         print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg)
         print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg)
+        print('Confusion matrix\n:')
+        print()
         # Print results on test set - do not do that
         #print("\nEvaluation on test set")
         #print('Evaluation accuracy on all test images, %2.2f' % tacc_avg.avg)

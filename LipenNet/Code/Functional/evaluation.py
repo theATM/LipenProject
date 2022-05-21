@@ -1,5 +1,8 @@
 import torch
 import sys
+import pandas as pd
+import numpy as np
+import seaborn as sn
 from sklearn.metrics import confusion_matrix
 
 import Code.Functional.utilities as u
@@ -42,6 +45,9 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
     y_true_all = []
     y_pred_all = []
 
+    class_names = ["Triangle", "Rules", "Rubber", "Pencil", "Pen", "None"]
+    classes_count = len(class_names)
+
     with torch.no_grad():
         for i, data in enumerate(data_loader):
             inputs = torch.autograd.Variable(data['image'].to(val_device, non_blocking=True))
@@ -60,7 +66,11 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
             #TODO other metrics (Fscore, Confusion Matrix, ROC) and check exisitong ones
 
     conf_matrix = confusion_matrix(y_true_all, y_pred_all)
-    return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix
+    df_cm = pd.DataFrame(conf_matrix/np.sum(conf_matrix) * classes_count, index=[i for i in class_names],
+                         columns=[i for i in class_names])
+    conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
+
+    return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix_heatmap
 
 
 def accuracy(outputs, labels , topk=(1,)):
