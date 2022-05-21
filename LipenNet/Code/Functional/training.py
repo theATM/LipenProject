@@ -31,7 +31,7 @@ def main():
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
     # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Runs)
-    writer = SummaryWriter("Logs/Runs/"+ml.getModelName(hparams)) #SummaryWriter("Logs/Runs/"+hparams['save_dir_path'].split("/")[-1]+"/")
+    writer = SummaryWriter("Logs/Runs/"+ml.getModelName(hparams))
     # Declare range of epochs to iterate
     max_epoch = hparams['max_epoch']
     min_epoch = 0
@@ -83,12 +83,9 @@ def train(
     best_acc = 0
     # Measure training time
     train_time = time.perf_counter()
-    old_criterion = torch.nn.CrossEntropyLoss()
     # Start Training
     for epoch in range(min_epoch,max_epoch):
-        if interactive:
-            print('\nEpoch', epoch)
-            print("Learning rate = %1.10f" % scheduler.get_last_lr().pop())
+
         # Defines statistical variables
         acc = ut.AverageMeter('Accuracy', ':6.2f')
         acc2 = ut.AverageMeter('Top 2 Accuracy', ':6.2f')
@@ -142,8 +139,11 @@ def train(
                     writer.add_scalar("Accuracy/train", acc.avg, epoch)
         # Print Result for One Epoch of Training
         if interactive:
-            print('Epoch {epoch:d}:  *  | Loss {avg_loss.avg:.3f} | Accuracy {acc.avg:.3f} | In Top 2 {acc2.avg:.3f} | In Top 3 {acc3.avg:.3f} | Used Time {epoch_time:.2f} s'
-                  .format(epoch=epoch,acc=acc, acc2=acc2, acc3=acc3, avg_loss=avg_loss, epoch_time=time.perf_counter() - epoch_time))
+            print(end="\n")
+            print('Train | Epoch, {epoch:d} |  *  | Learning rate, {learn_rate:.8f}  | Used Time, {epoch_time:.2f} s |'
+                  .format(epoch=epoch,learn_rate=scheduler.get_last_lr().pop(),epoch_time=time.perf_counter() - epoch_time))
+            print('Train | Epoch, {epoch:d} |  *  | Loss, {avg_loss.avg:.3f} | Accuracy, {acc.avg:.3f} | In Top 2, {acc2.avg:.3f} | In Top 3, {acc3.avg:.3f} | '
+                  .format(epoch=epoch,acc=acc, acc2=acc2, acc3=acc3, avg_loss=avg_loss))
         # Stepping scheduler
         scheduler.step()
 
@@ -156,13 +156,14 @@ def train(
             loss_avg, (acc_avg, acc2_avg, acc3_avg) = eva.evaluate(model,criterion,val_loader,train_device,hparams) #TODO unpack accuracies
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
-
+            model_saved :bool = False
             if save_mode != en.SavingMode.none_save and save_mode != en.SavingMode.last_save:
                 if save_mode == en.SavingMode.all_save or (save_mode == en.SavingMode.best_save and best_acc >= acc_avg.avg):
                     best_acc = acc_avg.avg if best_acc >= acc_avg.avg else best_acc
                     save_params = {"current_epoch":epoch,"current_acc":acc_avg.avg,"current_loss":loss_avg.avg}
                     ml.saveModel(model,optimizer,scheduler,hparams,save_params)
                     if interactive:
+                        model_saved = True
                         print("Saved model on epoch %d" % epoch)
 
             # Record Statistics
@@ -173,13 +174,10 @@ def train(
                 writer.add_scalar("Top3Acc/eval", acc3_avg.avg, epoch)
             # Print Statistics
             if interactive:
-                print('Evaluation on epoch %d accuracy on all validation images, %2.2f' % (epoch, acc_avg.avg))
-                print('Top 2 on epoch %d on all validation images, %2.2f' % (epoch, acc2_avg.avg))
-                print('Top 3 on epoch %d on all validation images, %2.2f' % (epoch, acc3_avg.avg))
-                print('Average loss on epoch %d on all validation images, %2.2f' % (epoch,loss_avg.avg))
-                print('Evaluation on epoch %d took %.2f s' % (epoch, time.perf_counter() - evaluation_time))
-        if interactive:
-            print('Epoch ' + str(epoch) + ' completed')
+                print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'
+                      .format(epoch=epoch,model_saved=str(model_saved),  epoch_time= time.perf_counter() - evaluation_time))
+                print('Eval  | Epoch, {epoch:d} |  #  | Loss, {loss:.3f} | Accuracy, {acc:.3f} | In Top 2, {acc2:.3f} | In Top 3, {acc3:.3f} |'
+                      .format(epoch=epoch, loss=loss_avg.avg, acc= acc_avg.avg, acc2 =  acc2_avg.avg,  acc3=acc3_avg.avg))
 
 
     model.eval()
@@ -208,6 +206,7 @@ def train(
         ml.saveModel(model, optimizer, scheduler, hparams, save_params)
     if interactive:
         print("Saved model on epoch %d at the end ot training" % max_epoch)
+        print("Whole training took %f.2 s",time.perf_counter() - train_time)
         print("Bye")
 
     return vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg)
