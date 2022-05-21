@@ -20,6 +20,7 @@ class CriterionType(Enum):
 
 class OptimizerType(Enum):
     Adam :str = "Adam"
+    AdamW :str = "AdamW"
 
 
 class ModelType(Enum):
