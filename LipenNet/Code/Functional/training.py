@@ -160,7 +160,7 @@ def train(
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
-            loss_val, (acc_val, acc2_val, acc3_val), conf_matrix = eva.evaluate(model,criterion,val_loader,train_device, hparams)
+            loss_val, (acc_val, acc2_val, acc3_val), *conf_matrix = eva.evaluate(model,criterion,val_loader,train_device, hparams)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
             model_saved :bool = False
@@ -177,7 +177,8 @@ def train(
                 writer.add_scalar("Accuracy/eval", acc_val.avg, epoch)
                 writer.add_scalar("Top2Acc/eval", acc2_val.avg, epoch)
                 writer.add_scalar("Top3Acc/eval", acc3_val.avg, epoch)
-                writer.add_figure("Confusion matrix", conf_matrix, epoch)
+                if not __debug__:
+                    writer.add_figure("Confusion matrix", conf_matrix, epoch)
             # Print Statistics
             if interactive:
                 print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'

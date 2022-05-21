@@ -1,7 +1,8 @@
 import torch
 import sys
-import pandas as pd
+import scipy as sp
 import numpy as np
+import pandas as pd
 import seaborn as sn
 from sklearn.metrics import confusion_matrix
 
@@ -64,15 +65,34 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
             _, pred = outputs.topk(1, 1, True, True)
             y_pred_all += pred.tolist()
             y_true_all += labels.tolist()
-            #TODO other metrics (Fscore, Confusion Matrix, ROC) and check exisitong ones
 
     conf_matrix = confusion_matrix(y_true_all, y_pred_all)
     df_cm = pd.DataFrame(conf_matrix, index=[i for i in class_names],
                          columns=[i for i in class_names_pred])
-    #df_cm = df_cm.div(df_cm.sum(axis=1), axis=0)
-    conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
 
-    return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix_heatmap
+    if not __debug__:
+        conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
+
+    precision = 0
+    recall = 0
+
+    cm_sum = conf_matrix.sum()
+    cm_row_sum = df_cm.sum('index')
+    cm_col_sum = df_cm.sum('columns')
+    cm_diag_sum = np.diag(conf_matrix).sum()
+
+    #for i in range(classes_count):
+    #    tp = conf_matrix[i][i]
+    #    tn = cm_diag_sum[i] - tp
+    #    fp = cm_col_sum[i] - tp
+    #    fn = cm_row_sum[i] - tp
+    #    weight = cm_row_sum[i] / cm_sum
+    #    precision += (tp / (tp+fp)) * weight
+
+    if not __debug__:
+        return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix_heatmap
+    else:
+        return loss_avg, (acc_avg, acc2_avg, acc3_avg)
 
 
 def accuracy(outputs, labels , topk=(1,)):
