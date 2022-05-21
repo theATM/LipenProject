@@ -1,3 +1,4 @@
+import random
 import sys
 import time
 
@@ -22,12 +23,16 @@ def main():
     # Set proper device
     train_device = torch.device(hparams['train_device'].value)
     if train_device == 'cuda': torch.cuda.empty_cache()    #Empty GPU Cache before Training starts
+    # Set initial seed
+    torch.manual_seed(1410)
+    random.seed(1410)
+    torch.cuda.manual_seed(1410)
     # Load Data
     train_loader, val_loader, _ = dl.loadData(hparams,load_train=True,load_val=True)
     # Pick Model
     model = ml.pickModel(hparams).to(train_device)
     # Pick Other Elements
-    criterion = ml.pickCriterion(hparams)
+    criterion = ml.pickCriterion(hparams,train_device)
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
     # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Runs)
@@ -107,7 +112,7 @@ def train(
                 # Calculate loss
                 if reduction_mode == en.ReductionMode.none:
                     # recalculate class weights
-                    weights = class_weights
+                    weights = class_weights[labels]
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
                 else:
@@ -151,14 +156,11 @@ def train(
 
         # Evaluate in some epochs:
 
-        if epoch % epoch_per_eval == 0 and epoch != 0:
+        if epoch % epoch_per_eval == 0 :
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
-            loss_val, (acc_val, acc2_val, acc3_val), conf_matrix = eva.evaluate(model,
-                                                                                criterion,
-                                                                                val_loader,
-                                                                                train_device, hparams)
+            loss_val, (acc_val, acc2_val, acc3_val), conf_matrix = eva.evaluate(model,criterion,val_loader,train_device, hparams)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
             model_saved :bool = False
@@ -186,11 +188,7 @@ def train(
 
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
-    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), conf_matrix = eva.evaluate(model,
-                                                                            criterion,
-                                                                            val_loader,
-                                                                            train_device,
-                                                                            hparams)
+    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), conf_matrix = eva.evaluate(model, criterion,val_loader, train_device,hparams)
     # Post Training Evaluation on testset (for true accuracy) - do not do that
     # tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
     if interactive:
@@ -202,7 +200,7 @@ def train(
         print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg)
         print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg)
         print('Confusion matrix\n:')
-        print()
+        print(conf_matrix)
         # Print results on test set - do not do that
         #print("\nEvaluation on test set")
         #print('Evaluation accuracy on all test images, %2.2f' % tacc_avg.avg)

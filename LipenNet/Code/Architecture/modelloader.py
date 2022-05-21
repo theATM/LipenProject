@@ -121,14 +121,14 @@ def getModelName(hparams:Hparams):
 
 
 
-def pickCriterion(hparams:Hparams):
+def pickCriterion(hparams:Hparams,device=None):
     criterion = None
-    weights =  torch.tensor(hparams[hparams['dataset_name'].value + '_class_weights'])
-    reduction = hparams['reduction_mode']
     match hparams['criterion']:
         case en.CriterionType.CrossEntropy:
             criterion = torch.nn.CrossEntropyLoss()
         case en.CriterionType.WeightedCrossEntropy:
+            weights = torch.tensor(hparams[hparams['dataset_name'].value + '_class_weights']).to(device)
+            reduction = hparams['reduction_mode'].value
             criterion = torch.nn.CrossEntropyLoss(weight=weights, reduction=reduction)
     return criterion
 
