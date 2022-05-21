@@ -10,6 +10,7 @@ import Code.Dataloader.lipenset as dl
 import Code.Profile.profileloader as pl
 import Code.Architecture.modelloader as ml
 import Code.Functional.utilities as ut
+import Code.Protocol.enums as en
 
 
 def main():
@@ -35,7 +36,7 @@ def main():
 
 
 
-def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams):
+def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduction_mode):
     model.eval()
     acc_avg = ut.AverageMeter('Accuracy', ':6.2f')
     loss_avg = ut.AverageMeter('Loss', ':6.2f')

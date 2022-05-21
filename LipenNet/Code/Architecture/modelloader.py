@@ -121,9 +121,10 @@ def getModelName(hparams:Hparams):
 
 
 
-def pickCriterion(hparams:Hparams,device=None):
+def pickCriterion(hparams:Hparams,device=None,purpose : en.CriterionPurpose = en.CriterionPurpose.EvalCriterion):
     criterion = None
-    match hparams['criterion']:
+    criterion_type = hparams['criterion'] if purpose == en.CriterionPurpose.TrainCriterion else hparams['val_criterion']
+    match criterion_type:
         case en.CriterionType.CrossEntropy:
             criterion = torch.nn.CrossEntropyLoss()
         case en.CriterionType.WeightedCrossEntropy:
@@ -131,6 +132,7 @@ def pickCriterion(hparams:Hparams,device=None):
             reduction = hparams['reduction_mode'].value
             criterion = torch.nn.CrossEntropyLoss(weight=weights, reduction=reduction)
     return criterion
+
 
 
 def pickOptimizer(model,hparams:Hparams):

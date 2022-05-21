@@ -53,6 +53,7 @@ class Hparams(TypedDict):
     #Eval Parameters
     val_device: en.Device | None
     epoch_per_eval : int | None
+    val_criterion : en.CriterionType | None
 
 
     #Normalizaton Parameters
@@ -199,6 +200,7 @@ __hparams  : Hparams = \
     #Eval Parameters
     "val_device":  None,
     "epoch_per_eval": None,
+    "val_criterion": None,
 
     # Normalizaton Parameters
     "clean_dataset_mean": None,
@@ -289,6 +291,10 @@ def loadProfile(arguments):
             else:
                 print("Wrong key in profile.txt -> "+ parameter_key)
                 sys.exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
+
+        #Add eval criterion:
+        if __hparams["val_criterion"] is None and __hparams["criterion"] is not None :
+            __hparams["val_criterion"] = __hparams["criterion"]
         #Save profile path to dict
         __hparams["profile_file"] = profile_path
         #Save info if there is a file with loadable model

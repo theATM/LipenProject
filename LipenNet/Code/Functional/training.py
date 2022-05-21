@@ -32,7 +32,8 @@ def main():
     # Pick Model
     model = ml.pickModel(hparams).to(train_device)
     # Pick Other Elements
-    criterion = ml.pickCriterion(hparams,train_device)
+    criterion = ml.pickCriterion(hparams,train_device,en.CriterionPurpose.TrainCriterion)
+    val_criterion = ml.pickCriterion(hparams, train_device,en.CriterionPurpose.EvalCriterion)
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
     # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Runs)
@@ -67,7 +68,7 @@ def main():
     #Run training
     results = train(hparams=hparams,train_device=train_device,
                     train_loader=train_loader,val_loader=val_loader,
-                    model=model,criterion=criterion,optimizer=optimizer,scheduler=scheduler,
+                    model=model,criterion=criterion,val_criterion=val_criterion,optimizer=optimizer,scheduler=scheduler,
                     min_epoch=min_epoch,max_epoch=max_epoch,epoch_per_eval=epoch_per_eval,grad_per_batch=grad_per_batch,
                     single_batch_test=single_batch_test, writer = writer, class_weights=class_weights,reduction_mode=reduction_mode,
                     interactive=True,save_mode=save_mode)
@@ -77,7 +78,7 @@ def main():
 def train(
             hparams : pl.Hparams, train_device : str,
             train_loader, val_loader,
-            model, criterion, optimizer, scheduler,
+            model, criterion,val_criterion, optimizer, scheduler,
             min_epoch, max_epoch, epoch_per_eval, grad_per_batch,
             single_batch_test : bool, writer, class_weights,reduction_mode,
             interactive: bool, save_mode : en.SavingMode
@@ -163,7 +164,7 @@ def train(
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
-            loss_val, (acc_val, acc2_val, acc3_val), *conf_matrix = eva.evaluate(model,criterion,val_loader,train_device, hparams)
+            loss_val, (acc_val, acc2_val, acc3_val), *conf_matrix = eva.evaluate(model,val_criterion,val_loader,train_device, hparams, reduction_mode)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
             model_saved :bool = False
@@ -192,7 +193,7 @@ def train(
 
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
-    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), conf_matrix = eva.evaluate(model, criterion,val_loader, train_device,hparams)
+    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), conf_matrix = eva.evaluate(model, val_criterion,val_loader, train_device,hparams)
     # Post Training Evaluation on testset (for true accuracy) - do not do that
     # tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
     if interactive:
