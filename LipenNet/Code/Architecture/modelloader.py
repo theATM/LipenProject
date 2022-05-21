@@ -7,6 +7,7 @@ from Code.Profile.profileloader import Hparams
 import os
 import shutil
 from typing import Optional
+import Code.Architecture.model as m
 
 
 def pickModel(hparams:Hparams):
@@ -32,6 +33,9 @@ def pickModel(hparams:Hparams):
             for layer in layers[:frozen]:
                 for param in layer.parameters():
                     param.requires_grad = False
+
+        case en.ModelType.Alexnet:
+            model = m.AlexNet(num_classes=6)
     return model
 
 
