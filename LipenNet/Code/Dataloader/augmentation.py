@@ -9,6 +9,7 @@ from Code.Dataloader.transforms import LipenTransform
 from skimage import io
 io.use_plugin('matplotlib')
 
+
 def main():
     hparams = pl.loadProfile(sys.argv)
     transformer = LipenTransform(en.AugmentationType.Online, hparams)

@@ -5,9 +5,13 @@ from typing import TypedDict,  get_type_hints
 
 import Code.Protocol.enums as en
 
+DEFAULT_PROFILE_DIR_PATH = "Code/Profile/Profiles/"
+
 
 # noinspection PyTypedDict
 class Hparams(TypedDict):
+    #HParams file (saved form input argument)
+    profile_file : str | None                           #Filled automatically
     #Dataset Parameters (paths & names)
     data_dir : str | None                               #Data directory name (folder in which are datasets):
     dataset_dir : str | None                            #Chosen Dataset Directory
@@ -21,16 +25,28 @@ class Hparams(TypedDict):
     val_batch_size: int | None
     test_batch_size: int | None
 
-    #Training Parameters
-    train_initial_learning_rate: float | None
-    train_scheduler_list: list[int] | None
-    train_single_batch_test: bool | None
-    train_max_epoch: int | None
-    train_device: en.Device | None
-    train_model: en.ModelType | None
-    train_optimizer : en.OptimizerType | None
-    train_criterion : en.CriterionType | None
+    #Load Params
+    load_model : bool| None                             #Filled automatically (pass loadable (with path) model as run param)
+    load_model_path : str | None                        #Filled automatically
+    save_dir_path : str | None                          #Directory where models are saved (must be set manually)
+    always_save : bool | None
 
+    #Training Parameters
+    initial_learning_rate: float | None
+    scheduler_list: list[int] | None
+    scheduler_gamma : float | None
+    grad_per_batch : int | None
+    single_batch_test: bool | None
+    max_epoch: int | None
+    train_device: en.Device | None
+    model: en.ModelType | None
+    optimizer : en.OptimizerType | None
+    criterion : en.CriterionType | None
+    save_mode : en.SavingMode | None
+
+    #Eval Parameters
+    val_device: en.Device | None
+    epoch_per_eval : int | None
 
 
     #Normalizaton Parameters
@@ -99,7 +115,7 @@ def convertStrToType(key,value):
     elif set_type == float:
         return float(value)
     elif set_type == bool:
-        return bool(value)
+        return value == "True"
     elif set_type == list[float]:
         return list(map(float,(value[1:-1].split(","))))
     elif set_type == list[int]:
@@ -120,6 +136,8 @@ def convertStrToType(key,value):
         return en.OptimizerType[value]
     elif set_type == en.CriterionType:
         return en.CriterionType[value]
+    elif set_type == en.SavingMode:
+        return en.SavingMode[value]
 
     else:
         print("Unimplemented Type Detected! -> " + str(set_type))
@@ -131,6 +149,8 @@ def convertStrToType(key,value):
 #Hiperparameters of this program
 __hparams  : Hparams = \
 {
+    # HParams file
+    "profile_file" : None,
     #Data Paths:
     #Main Data Directory
     "data_dir" : None,
@@ -144,16 +164,28 @@ __hparams  : Hparams = \
     "train_batch_size" :None,
     "val_batch_size":  None,
     "test_batch_size":  None,
+    #Load Params
+    "load_model" : None,
+    "load_model_path" : None,
+    "save_dir_path" : None,
+    "always_save" : None,
 
     #Training Params
-    "train_initial_learning_rate" : None,
-    "train_scheduler_list" : None,
-    "train_single_batch_test": None,
-    "train_max_epoch":None,
+    "initial_learning_rate" : None,
+    "scheduler_list" : None,
+    "scheduler_gamma" : None,
+    "grad_per_batch" : None,
+    "single_batch_test": None,
+    "max_epoch":None,
     "train_device" :None,
-    "train_model": None,
-    "train_optimizer": None,
-    "train_criterion": None,
+    "model": None,
+    "optimizer": None,
+    "criterion": None,
+    "save_mode" : None,
+
+    #Eval Parameters
+    "val_device":  None,
+    "epoch_per_eval": None,
 
     # Normalizaton Parameters
     "clean_dataset_mean": None,
@@ -206,18 +238,31 @@ __hparams  : Hparams = \
 
 
 def loadProfile(arguments):
+    """
+    Function meant to load and decipher profile.txt file with hyper parameters
+    :param arguments - run arguments passed from user ( arg 1 - profile.txt, arg 2 - loadable model path (optional )):
+    :return - hparams dict with all hyper parameters set:
+    """
     if len(arguments) < 2:
         print("Pass the profile file name as an argument to script")
         sys.exit(err.PROFILE_WRONG_PROGRAM_ARG_NUM)
-    profile_name = arguments[1]
-    profile_path = "Code/Profile/Profiles/" + profile_name
+    #decode 1st run argument  - profile file path or name
+    profile_name : str = arguments[1]
+    #decode 2nd (if present) run argument - optional - loadable model path
+    load_model_path : str = arguments [2] if len(arguments) > 3 else ""
+    #profile path is default (DEFAULT_PROFILE_DIR_PATH + profile_name) or present in profile_name (if name contains any "/")
+    profile_path = DEFAULT_PROFILE_DIR_PATH + profile_name if len(profile_name.split("/")) == 1 else profile_name
     if not os.path.exists(profile_path):
-        print("Wrong argument passed. Not a file. Pass the profile file name")
+        print("Wrong argument passed. " + profile_path+ " Not a file. Pass the profile file name")
         sys.exit(err.PROFILE_WRONG_PARAM_NOT_FILE)
-    with open("Code/Profile/Profiles/" + profile_name) as profile_file:
+    with open(profile_path) as profile_file:
+        #Check every line in profile file
         for line in profile_file:
-            if line[0] == "\n" : continue #ignore empty lines
-            if line[0] == "#" : continue #ignore commands
+            #ignore empty lines
+            if line[0] == "\n" : continue
+            #ignore comments
+            if line[0] == "#" : continue
+            #decode parameter line:
             line = line.rstrip()
             line = ''.join(line.rsplit())
             if len(line.split("=")) < 2:
@@ -231,6 +276,11 @@ def loadProfile(arguments):
             else:
                 print("Wrong key in profile.txt -> "+ parameter_key)
                 sys.exit(err.PROFILE_WRONG_KEY_IN_PROFILE_FILE)
+        #Save profile path to dict
+        __hparams["profile_file"] = profile_path
+        #Save info if there is a file with loadable model
+        __hparams['load_model'] = True if load_model_path != "" else False
+        __hparams['load_model_path'] = load_model_path
         #Check if all hparams are set:
         if any( elem is None for elem in __hparams.values()):
             print("Not all parameters set!")

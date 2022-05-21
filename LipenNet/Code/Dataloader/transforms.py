@@ -58,13 +58,12 @@ class EnhanceBrightness(object):  # Karol's work
 class LipenTransform:
     transform = None
 
-    def __init__(self, full_augmentation: en.AugmentationType, hparams: Hparams):
+    def __init__(self, augmentation_type: en.AugmentationType, hparams: Hparams):
         mean = hparams[hparams['dataset_name'].value + '_dataset_mean']  # type: ignore
         std = hparams[hparams['dataset_name'].value + '_dataset_std']  # type: ignore
 
-        if full_augmentation == en.AugmentationType.Online:
+        if augmentation_type == en.AugmentationType.Online:
             self.transform = T.Compose([
-                T.transforms.ToPILImage(),
                 T.Resize(hparams['resize_size']),
                 T.RandomVerticalFlip(hparams['vertical_flip_prob']),
                 T.RandomHorizontalFlip(hparams['horizontal_flip_prob']),
@@ -95,11 +94,22 @@ class LipenTransform:
                 T.transforms.RandomApply(
                     [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
                     p=hparams['gaussian_blur_prob']),
+                T.Normalize(mean=mean, std=std),
             ])
-        elif full_augmentation == en.AugmentationType.Rotation:
+        elif augmentation_type == en.AugmentationType.Rotation:
             self.transform = T.Compose([
+                T.ToTensor(),
                 T.Resize(hparams['resize_size']),
                 RandomRotationTransform(hparams['rotate_angles']),
             ])
-        elif full_augmentation == en.AugmentationType.Normalize:
-            self.transform = T.Normalize()
+        elif augmentation_type == en.AugmentationType.Normalize:
+            self.transform = T.Compose([
+                    T.ToTensor(),
+                    T.Normalize(mean=mean,std=std)
+                ])
+        elif augmentation_type == en.AugmentationType.Without:
+            self.transform = T.Compose([
+                    T.ToTensor(),
+                    T.Resize(hparams['resize_size']),
+
+                ])

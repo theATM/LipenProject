@@ -33,7 +33,7 @@ def plot(sour_img, imgs):
                 ax = axs[row_idx, col_idx]
                 ax.set(xticklabels=[], yticklabels=[], xticks=[], yticks=[], frame_on=False)
                 continue
-            axs[row_idx, col_idx].imshow( imgs[img_idx] )
+            axs[row_idx, col_idx].imshow(imgs[img_idx].squeeze().permute(1,2,0))
             axs[row_idx, col_idx].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[] )
             img_idx += 1
 
@@ -50,7 +50,7 @@ def main():
     seed = int(random.random() * 100 * random.random()) if True else 1525
     torch.manual_seed(seed)
 
-    transform = tr.LipenTransform(full_augmentation=True,hparams=hparams)
+    transform = tr.LipenTransform(augmentation_type=en.AugmentationType.Online, hparams=hparams)
 
     for data in train_loader:
         images = data["path"]
@@ -59,6 +59,7 @@ def main():
             pimage = ImageOps.exif_transpose(pimage)
             sub_imgs = [transform.transform(pimage) for _ in range(4)]
             plot(pimage, sub_imgs)
+            pimage.close()
 
 
 
