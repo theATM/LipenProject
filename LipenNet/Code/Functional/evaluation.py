@@ -50,6 +50,8 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
     class_names_pred = [class_name + ".P" for class_name in class_names]
     classes_count = len(class_names)
 
+    conf_matrix_heatmap = None
+
     with torch.no_grad():
         for i, data in enumerate(data_loader):
             inputs = torch.autograd.Variable(data['image'].to(val_device, non_blocking=True))
