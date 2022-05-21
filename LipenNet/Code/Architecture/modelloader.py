@@ -69,7 +69,7 @@ def saveModel(model,optimizer,scheduler,hparams:Hparams,save_params:dict):
     if "current_epoch" in save_params:
         save_name += "Epoch_" + str(save_params["current_epoch"]) + "_"
     if "current_acc" in save_params:
-        save_name += "Acc_" + str(save_params["current_acc"])
+        save_name += "Acc_" + str(save_params["current_acc"].item())
     save_name += ".pth"
 
     # Create Save Dictionary:

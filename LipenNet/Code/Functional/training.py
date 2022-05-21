@@ -155,7 +155,7 @@ def train(
             print('Train | Epoch, {epoch:d} |  *  | Learning rate, {learn_rate:.3e}  | Used Time, {epoch_time:.2f} s |'
                   .format(epoch=epoch,learn_rate=scheduler.get_last_lr().pop(),epoch_time=time.perf_counter() - epoch_time))
             print('Train | Epoch, {epoch:d} |  *  | Loss, {avg_loss.avg:.3f} | Accuracy, {acc.avg:.3f} | In Top 2, {acc2.avg:.3f} | In Top 3, {acc3.avg:.3f} | '
-                  .format(epoch=epoch,acc=acc, acc2=acc2, acc3=acc3, avg_loss=avg_loss))
+                  .format(epoch=epoch,acc=acc.item(), acc2=acc2.item(), acc3=acc3.item(), avg_loss=avg_loss.item()))
         # Stepping scheduler
         scheduler.step()
 
@@ -193,9 +193,9 @@ def train(
                 print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'
                       .format(epoch=epoch, model_saved=str(model_saved),  epoch_time=time.perf_counter() - evaluation_time))
                 print('Eval  | Epoch, {epoch:d} |  #  | Loss, {loss:.3f} | Accuracy, {acc:.3f} | In Top 2, {acc2:.3f} | In Top 3, {acc3:.3f} |'
-                      .format(epoch=epoch, loss=loss_val.avg, acc=acc_val.avg, acc2=acc2_val.avg,  acc3=acc3_val.avg))
+                      .format(epoch=epoch, loss=loss_val.avg.item(), acc=acc_val.avg.item(), acc2=acc2_val.avg.item(),  acc3=acc3_val.avg.item()))
                 print('Eval  | Epoch, {epoch:d} |  #  | Precision, {precision: .3f} | Recall, {recall: .3f} | F1 Score, {f1_score: .3f} |'
-                      .format(epoch=epoch, precision=precision, recall=recall, f1_score=f1_score))
+                      .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item()))
 
 
     model.eval()
@@ -207,10 +207,10 @@ def train(
         #Print results on eval set
         print("\nTraining concluded\n")
         print("Evaluation on validation set")
-        print('Evaluation accuracy at the end on all validation images, %2.2f' % vacc_avg.avg)
-        print('Top 2 at the end on all validation images, %2.2f' % vacc2_avg.avg)
-        print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg)
-        print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg)
+        print('Evaluation accuracy at the end on all validation images, %2.2f' % vacc_avg.avg.item())
+        print('Top 2 at the end on all validation images, %2.2f' % vacc2_avg.avg.item())
+        print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg.item())
+        print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg.item())
         print('Confusion matrix\n:')
         print(conf_matrix)
         # Print results on test set - do not do that

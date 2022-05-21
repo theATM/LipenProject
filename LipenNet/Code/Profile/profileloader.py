@@ -264,7 +264,7 @@ def loadProfile(arguments):
     #decode 1st run argument  - profile file path or name
     profile_name : str = arguments[1]
     #decode 2nd (if present) run argument - optional - loadable model path
-    load_model_path : str = arguments [2] if len(arguments) > 3 else ""
+    load_model_path : str = arguments [2] if len(arguments) >= 3 else ""
     #profile path is default (DEFAULT_PROFILE_DIR_PATH + profile_name) or present in profile_name (if name contains any "/")
     profile_path = DEFAULT_PROFILE_DIR_PATH + profile_name if len(profile_name.split("/")) == 1 else profile_name
     if not os.path.exists(profile_path):
