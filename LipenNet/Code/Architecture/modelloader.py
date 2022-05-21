@@ -16,11 +16,22 @@ def pickModel(hparams:Hparams):
             # load pretrained resnet18 model
             model = torchvision.models.resnet18(pretrained=True)
             # add fresh last layer with number of classes
-            model.fc = torch.nn.Sequential(torch.nn.Linear(model.fc.in_features, 6))
+            model.fc = torch.nn.Linear(model.fc.in_features, 6)  # add last layer
+            layers = [model.layer1, model.layer2, model.layer3, model.layer4]
+            frozen = hparams["frozen_initial_layers"]
+            for layer in layers[:frozen]:
+                for param in layer.parameters():
+                    param.requires_grad = False
 
         case en.ModelType.Resnet18:
             # load resnet 18 model with fresh weights and proper class number
             model = torchvision.models.resnet18(pretrained=False, num_classes=6)
+            model.fc = torch.nn.Linear(model.fc.in_features, 6)  # add last layer
+            layers = [model.layer1, model.layer2, model.layer3, model.layer4]
+            frozen = hparams["frozen_initial_layers"]
+            for layer in layers[:frozen]:
+                for param in layer.parameters():
+                    param.requires_grad = False
     return model
 
 
@@ -83,7 +94,8 @@ def savePrepareDir(hparams:Hparams):
     now_str = now.strftime("%d.%m.%Y_%H:%M")
     save_dir_name = str(hparams["model"].value) + "_" + now_str
     hparams['save_dir_path'] += save_dir_name + "/"
-    os.mkdir(hparams['save_dir_path'][:-1])
+    if not os.path.exists(hparams['save_dir_path'][:-1]):
+        os.makedirs(hparams['save_dir_path'][:-1])
     profile_file_name = hparams["profile_file"].split("/")[-1]
     profile_file_name = profile_file_name.split(".")[0] +"_" + save_dir_name +"."+ profile_file_name.split(".")[1]
     profile_file_path = hparams['save_dir_path'] + profile_file_name
@@ -110,7 +122,11 @@ def pickOptimizer(model,hparams:Hparams):
     optimizer = None
     match hparams['optimizer']:
         case en.OptimizerType.Adam:
-            optimizer = torch.optim.Adam(model.parameters(),lr=hparams['initial_learning_rate'])
+            optimizer = torch.optim.Adam(model.parameters(), lr=hparams['initial_learning_rate'],
+                                         weight_decay=hparams['weight_decay'])
+        case en.OptimizerType.AdamW:
+            optimizer = torch.optim.AdamW(model.parameters(), lr=hparams['initial_learning_rate'],
+                                          weight_decay=hparams['weight_decay'])
     return optimizer
 
 

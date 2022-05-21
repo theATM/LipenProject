@@ -33,6 +33,8 @@ class Hparams(TypedDict):
 
     #Training Parameters
     initial_learning_rate: float | None
+    weight_decay: float | None
+    frozen_initial_layers: int | None
     scheduler_list: list[int] | None
     scheduler_gamma : float | None
     grad_per_batch : int | None
@@ -178,6 +180,8 @@ __hparams  : Hparams = \
 
     #Training Params
     "initial_learning_rate" : None,
+    "weight_decay": None,
+    "frozen_initial_layers": None,
     "scheduler_list" : None,
     "scheduler_gamma" : None,
     "grad_per_batch" : None,

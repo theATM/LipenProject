@@ -4,29 +4,43 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = UniformDataset
-dataset_name = UniformDataset
+dataset_dir = CleanDataset
+dataset_name = CleanDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = UniformDatasetLabel.csv
+label_filename = CleanDatasetLabel.csv
 #batch sizes
-batch_size =4
+train_batch_size =4
 val_batch_size =1
 test_batch_size = 1
+#Load Params
+save_dir_path = Models/Saves/
+save_mode = all_save
 
-############################################3
+############################################
 # Training params
 initial_learning_rate= 0.00001
-scheduler_list= [1,2 ,  3, 4, 5]
+weight_decay =  20
+frozen_initial_layers = 3
+scheduler_list= [50,100,150,200]
+scheduler_gamma=0.75
+grad_per_batch = 8
 single_batch_test= False
-max_epoch = 10
-train_device= Cuda
-model= A
+max_epoch = 250
+train_device = Cuda
+model= Resnet18_pretrained
 optimizer = Adam
 criterion = CrossEntropy
+reduction_mode= none
+clean_class_weights= [1.07,1.19,1,1.01,0.81,0.99]
+unified_class_weights= [1,1,1,1,1,1]
+merged_class_weights= [1,1,1,1,1,1]
 
+#Eval Parameters
+val_device =  Cpu
+epoch_per_eval = 10
 
 #Augmentation params
 
