@@ -155,7 +155,7 @@ def train(
             print('Train | Epoch, {epoch:d} |  *  | Learning rate, {learn_rate:.3e}  | Used Time, {epoch_time:.2f} s |'
                   .format(epoch=epoch,learn_rate=scheduler.get_last_lr().pop(),epoch_time=time.perf_counter() - epoch_time))
             print('Train | Epoch, {epoch:d} |  *  | Loss, {avg_loss.avg:.3f} | Accuracy, {acc.avg:.3f} | In Top 2, {acc2.avg:.3f} | In Top 3, {acc3.avg:.3f} | '
-                  .format(epoch=epoch,acc=acc.item(), acc2=acc2.item(), acc3=acc3.item(), avg_loss=avg_loss.item()))
+                  .format(epoch=epoch,acc=acc, acc2=acc2, acc3=acc3, avg_loss=avg_loss))
         # Stepping scheduler
         scheduler.step()
 
