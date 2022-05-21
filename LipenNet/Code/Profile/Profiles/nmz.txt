@@ -4,8 +4,8 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = UniformDatasetAugmented
-dataset_name = UniformDatasetAugmented
+dataset_dir = CleanDataset
+dataset_name = CleanDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
@@ -40,7 +40,7 @@ merged_class_weights= [1,1,1,1,1,1]
 
 #Eval Parameters
 val_device =  Cpu
-epoch_per_eval = 10
+epoch_per_eval = 1
 
 #Augmentation params
 
