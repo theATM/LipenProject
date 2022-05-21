@@ -70,7 +70,7 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
     df_cm = pd.DataFrame(conf_matrix, index=[i for i in class_names],
                          columns=[i for i in class_names_pred])
 
-    if not __debug__:
+    if not sys.gettrace():
         conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
 
     precision = 0
@@ -89,21 +89,20 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
         fp = cm_col_sum[i] - tp
         fn = cm_row_sum[i] - tp
         weight = cm_row_sum[i] / cm_sum
-        class_precision = tp / (tp+fp)
-        class_recall = tp / (tp + fn)
+        class_precision = None
+        class_recall = None
         if tp != 0 or fp != 0:
+            class_precision = tp / (tp + fp)
             precision += class_precision * weight
             class_precisions.append(class_precision)
         if tp != 0 or fn != 0:
+            class_recall = tp / (tp + fn)
             recall += class_recall * weight
-            class_recalls.append(class_precision)
-        if not math.isnan(class_precision) and not math.isnan(class_recall):
+            class_recalls.append(class_recall)
+        if class_precision is not None and class_recall is not None and (class_precision != 0 or class_recall != 0):
             f1_score += (2 * class_precision * class_recall / (class_precision + class_recall)) * weight
 
-    if not __debug__:
-        return loss_avg, (acc_avg,acc2_avg,acc3_avg), conf_matrix_heatmap
-    else:
-        return loss_avg, (acc_avg, acc2_avg, acc3_avg)
+    return loss_avg, (acc_avg,acc2_avg,acc3_avg), precision, recall, f1_score, conf_matrix_heatmap
 
 
 def accuracy(outputs, labels , topk=(1,)):
