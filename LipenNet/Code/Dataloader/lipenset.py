@@ -1,19 +1,10 @@
-import os
+import re
 import random
-import math
-import numpy as np
-import pickle
 import sys
-
-import skimage
 from torch.utils.data import Dataset, DataLoader
-
-
 import Code.Protocol.enums as en
 from Code.Profile.profileloader import Hparams
-from skimage import io
 from PIL import Image
-
 import Code.Dataloader.transforms as t
 import Code.Dataloader.datatools as dt
 
@@ -23,13 +14,16 @@ class Lipenset(Dataset):
         self.dataset_path = hparams['data_dir'] + "/" + hparams['dataset_dir']
         self.dataset_type = dataset_type
         self.shuffle = shuffle
+
+        set_dir = ""
         match self.dataset_type:
             case en.DatasetType.Testset:
-                self.dataset_path = self.dataset_path + "/" + hparams['testset_dir']
+                set_dir = hparams['testset_dir']
             case en.DatasetType.ValSet:
-                self.dataset_path = self.dataset_path + "/" + hparams['valset_dir']
+                set_dir = hparams['valset_dir']
             case en.DatasetType.Trainset:
-                self.dataset_path = self.dataset_path + "/" + hparams['trainset_dir']
+                set_dir = hparams['trainset_dir']
+        self.dataset_path = self.dataset_path + "/" + set_dir
         self.dataset_name = hparams['dataset_name']
         self.label_filepath = hparams['data_dir'] + "/" + hparams['dataset_dir'] + "/" + hparams['label_filename']
 
@@ -49,22 +43,24 @@ class Lipenset(Dataset):
             sys.exit(1)
 
         with open(self.label_filepath, "r", encoding='utf-8') as label_file:
-            label_lines = label_file.readlines()
+            label_lines = label_file.readlines()[1:]
+        label_lines = list(filter(lambda x: x != "\n", label_lines))
 
-        for image_file in image_files:
-            for label_line in label_lines:
-                name = label_line.split(";")[0]
-                if name == "\n": continue
-                if name == "Name": continue
-                if name != image_file.split("/")[-2]+"/"+image_file.split("/")[-1]: continue
-                label = int(label_line.split(";")[1])
-                sub_label = int(label_line.split(";")[3])
-                extra_label = int(label_line.split(";")[3])
-                image_dict = {"label":label,"path":image_file,"sub":sub_label,"extra":extra_label}
-                self.images.append(image_dict)
-        if len(self.images) != self.image_amount:
+        image_file_pattern = re.compile(f".*{set_dir}/(.*)")
+        image_file_parsed = sorted([image_file_pattern.match(image_file).group(1) for image_file in image_files])
+        label_lines_split_raw = sorted([label_line.split(';') for label_line in label_lines])
+        label_lines_split = list(filter(lambda x: x[0] in image_file_parsed, label_lines_split_raw))
+
+        if len(label_lines_split) != len(image_files) or len(image_files) != self.image_amount:
             print("Different image number in csv and dirs")
             sys.exit(1)
+
+        for label_line_info, image_file in zip(label_lines_split, image_files):
+            image_dict = {"label": label_line_info[1],
+                          "path": image_file,
+                          "sub": label_line_info[2],
+                          "extra": label_line_info[3]}
+            self.images.append(image_dict)
 
         # Mix up the data
         if self.shuffle:
