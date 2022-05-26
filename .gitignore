@@ -16,6 +16,7 @@ LipenNet/Logs*
 LipenNet/Models*
 LipenNet/Old*
 LipenNet/.idea*
+LipenNet/Code/Functional/playground.py
 
 #Tagger
 LipenTagger/litagvenv*
