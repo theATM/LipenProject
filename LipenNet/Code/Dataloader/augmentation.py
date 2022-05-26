@@ -11,9 +11,6 @@ from Code.Functional.mean_std import calculate_mean_std
 import Code.Dataloader.datatools as dt
 
 
-AUGMENTATIONS_COUNT = 2
-
-
 def main():
     seed = 1410
     torch.manual_seed(seed)
@@ -22,6 +19,8 @@ def main():
 
     hparams = pl.loadProfile(sys.argv)
     trainset = Lipenset(hparams, en.DatasetType.Trainset, shuffle=True)
+
+    augmentation_count = hparams["augmentation_count"]
 
     in_dir = hparams['data_dir'] + "/" + hparams['dataset_dir'] + "/"
     in_dir_images = in_dir + hparams["trainset_dir"] + "/"
@@ -46,7 +45,7 @@ def main():
             if full_path in train_image_files:
                 csv_labels[full_path] = csv_label_raw
         new_csv_file.write('\n')
-        for i in range(1, AUGMENTATIONS_COUNT+1):
+        for i in range(1, augmentation_count+1):
             for imageDict in trainset:
                 csv_line = csv_labels[imageDict["path"]]
                 csv_line_split = csv_line.split(';')
@@ -58,7 +57,7 @@ def main():
                 new_csv_file.write(csv_line)
                 new_file_path = out_dir_images + new_file_subpath
                 save_image(imageDict["image"], new_file_path)
-            print(f"Augmentation {i}/{AUGMENTATIONS_COUNT} done.")
+            print(f"Augmentation {i}/{augmentation_count} done.")
     calculate_mean_std(hparams)
     print("Mean and std calculated. Exiting...")
 
