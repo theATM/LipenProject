@@ -56,10 +56,10 @@ class Lipenset(Dataset):
             sys.exit(1)
 
         for label_line_info, image_file in zip(label_lines_split, image_files):
-            image_dict = {"label": label_line_info[1],
+            image_dict = {"label": int(label_line_info[1]),
                           "path": image_file,
-                          "sub": label_line_info[2],
-                          "extra": label_line_info[3]}
+                          "sub": int(label_line_info[2]),
+                          "extra": int(label_line_info[3])}
             self.images.append(image_dict)
 
         # Mix up the data
