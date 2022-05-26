@@ -13,8 +13,8 @@ testset_dir = test
 label_filename = UniformDatasetLabelAugmented.csv
 normalization_filename = UniformDatasetMeanAugmented.pickle
 #batch sizes
-train_batch_size = 4
-val_batch_size = 4
+train_batch_size = 8
+val_batch_size = 1
 test_batch_size = 1
 #Load Params
 save_dir_path = Models/Saves/
@@ -47,7 +47,7 @@ epoch_per_eval = 10
 val_criterion = CrossEntropy
 
 #Augmentation Parameters
-augmentation_type = Offline
+augmentation_type = Normalize
 resize_size = (244,244)
 vertical_flip_prob = 0.3
 horizontal_flip_prob = 0.3

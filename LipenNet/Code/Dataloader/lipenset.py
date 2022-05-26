@@ -55,22 +55,23 @@ class Lipenset(Dataset):
             print("No Images were founded")
             sys.exit(1)
 
+        with open(self.label_filepath, "r", encoding='utf-8') as label_file:
+            label_lines = label_file.readlines()
+
         for image_file in image_files:
-            with open(self.label_filepath, "r", encoding='utf-8') as label_file:
-                for label_line in label_file:
-                    name = label_line.split(";")[0]
-                    if name == "\n": continue
-                    if name == "Name": continue
-                    if name != image_file.split("/")[-2]+"/"+image_file.split("/")[-1]: continue
-                    label = int(label_line.split(";")[1])
-                    sub_label = int(label_line.split(";")[3])
-                    extra_label = int(label_line.split(";")[3])
-                    image_dict = {"label":label,"path":image_file,"sub":sub_label,"extra":extra_label}
-                    self.images.append(image_dict)
+            for label_line in label_lines:
+                name = label_line.split(";")[0]
+                if name == "\n": continue
+                if name == "Name": continue
+                if name != image_file.split("/")[-2]+"/"+image_file.split("/")[-1]: continue
+                label = int(label_line.split(";")[1])
+                sub_label = int(label_line.split(";")[3])
+                extra_label = int(label_line.split(";")[3])
+                image_dict = {"label":label,"path":image_file,"sub":sub_label,"extra":extra_label}
+                self.images.append(image_dict)
         if len(self.images) != self.image_amount:
             print("Different image number in csv and dirs")
             sys.exit(1)
-
 
         # Mix up the data
         if self.shuffle:
@@ -87,7 +88,6 @@ class Lipenset(Dataset):
         imagep.close()
         #Add weights
         return image_dict
-
 
 
 def loadData(hparams : Hparams, load_train:bool = False,load_val:bool= False,load_test:bool= False):
