@@ -10,7 +10,7 @@ def main():
     return
 
 
-def calculateMeanStd():
+def calculateMeanStd(in_path):
     # calcuate means and stds:
     dataset = datasets.ImageFolder(IN_IMAGES_PATH[:-1], transform=T.ToTensor())
     sum_vec = 0.0
@@ -29,8 +29,6 @@ def calculateMeanStd():
     print("Dataset mean = " + str(mean))
     print("Dataset std =  " + str(std))
     return mean, std
-
-
 
 
 if __name__ == '__main__':

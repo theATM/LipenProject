@@ -13,6 +13,7 @@ import Code.Architecture.modelloader as ml
 import Code.Functional.utilities as ut
 import Code.Functional.evaluation as eva
 import Code.Protocol.enums as en
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -165,7 +166,7 @@ def train(
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
-            loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix = \
+            loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
                 eva.evaluate(model,val_criterion,val_loader,train_device, hparams, reduction_mode)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
@@ -187,20 +188,27 @@ def train(
                 writer.add_scalar("Recall/eval", recall, epoch)
                 writer.add_scalar("F1 Score/eval", f1_score, epoch)
                 if not sys.gettrace():
+                    writer.add_scalar("Average AUC-ROC", roc_auc_avg, epoch)
                     writer.add_figure("Confusion matrix", conf_matrix, epoch)
+                    writer.add_figure("ROC", roc_fig, epoch)
+                    plt.close('all')
             # Print Statistics
             if interactive:
                 print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'
                       .format(epoch=epoch, model_saved=str(model_saved),  epoch_time=time.perf_counter() - evaluation_time))
                 print('Eval  | Epoch, {epoch:d} |  #  | Loss, {loss:.3f} | Accuracy, {acc:.3f} | In Top 2, {acc2:.3f} | In Top 3, {acc3:.3f} |'
                       .format(epoch=epoch, loss=loss_val.avg.item(), acc=acc_val.avg.item(), acc2=acc2_val.avg.item(),  acc3=acc3_val.avg.item()))
-                print('Eval  | Epoch, {epoch:d} |  #  | Precision, {precision: .3f} | Recall, {recall: .3f} | F1 Score, {f1_score: .3f} |'
-                      .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item()))
-
+                if not sys.gettrace():
+                    print('Eval  | Epoch, {epoch:d} |  #  | Precision, {precision: .3f} | Recall, {recall: .3f} | F1 Score, {f1_score: .3f} | Avg. AUC-ROC, {aucroc: .3f} |'
+                          .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item(), aucroc=roc_auc_avg.item()))
+                else:
+                    print('Eval  | Epoch, {epoch:d} |  #  | Precision, {precision: .3f} | Recall, {recall: .3f} | F1 Score, {f1_score: .3f}'
+                          .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item()))
 
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
-    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), conf_matrix = eva.evaluate(model, val_criterion,val_loader, train_device,hparams)
+    vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
+        eva.evaluate(model, val_criterion, val_loader, train_device, hparams, reduction_mode)
     # Post Training Evaluation on testset (for true accuracy) - do not do that
     # tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
     if interactive:
@@ -230,8 +238,6 @@ def train(
         print("Bye")
 
     return vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg)
-
-
 
 
 if __name__ == "__main__":

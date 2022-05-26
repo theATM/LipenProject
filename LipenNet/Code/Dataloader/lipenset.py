@@ -10,7 +10,6 @@ from torch.utils.data import Dataset, DataLoader
 
 
 import Code.Protocol.enums as en
-import Code.Dataloader.datatools as dt
 from Code.Profile.profileloader import Hparams
 from skimage import io
 from PIL import Image
@@ -38,17 +37,19 @@ class Lipenset(Dataset):
 
         self.transform_tool = None
         match (self.augmentation_type or dataset_type):
-            case en.DatasetType.Testset | en.DatasetType.ValSet | en.AugmentationType.Without:
+            case en.AugmentationType.Without:
                 self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Without, hparams=hparams)
-            case en.AugmentationType.Normalize:
+            case en.DatasetType.Testset | en.DatasetType.ValSet | en.AugmentationType.Normalize:
                 self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Normalize, hparams=hparams)
             case en.AugmentationType.Rotation:
                 self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Rotation, hparams=hparams)
             case en.AugmentationType.Online:
                 self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Online, hparams=hparams)
+            case en.AugmentationType.Offline:
+                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Offline, hparams=hparams)
 
         self.images :list[dict] = []
-        image_files = dt.getImageFiles(self.dataset_path,self.dataset_path) #TODO - TypeError: an integer is required - warning
+        image_files = dt.getImageFiles(self.dataset_path) #TODO - TypeError: an integer is required - warning
         self.image_amount = len(image_files)
         if self.image_amount == 0:
             print("No Images were founded")

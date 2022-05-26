@@ -113,14 +113,6 @@ def getModelName(hparams:Hparams):
     return hparams['save_dir_name']
 
 
-
-
-
-
-
-
-
-
 def pickCriterion(hparams:Hparams,device=None,purpose : en.CriterionPurpose = en.CriterionPurpose.EvalCriterion):
     criterion = None
     criterion_type = hparams['criterion'] if purpose == en.CriterionPurpose.TrainCriterion else hparams['val_criterion']
@@ -132,7 +124,6 @@ def pickCriterion(hparams:Hparams,device=None,purpose : en.CriterionPurpose = en
             reduction = hparams['reduction_mode'].value
             criterion = torch.nn.CrossEntropyLoss(weight=weights, reduction=reduction)
     return criterion
-
 
 
 def pickOptimizer(model,hparams:Hparams):
@@ -155,4 +146,3 @@ def pickOptimizer(model,hparams:Hparams):
 #    def forward(self, input: torch.Tensor, target: torch.Tensor, weights:torch.Tensor) -> torch.Tensor:
 #        intermediate_losses = super(torch.nn.CrossEntropyLoss, self).forward(input,target)
 #        final_loss = torch.mean(weights * intermediate_losses)
-

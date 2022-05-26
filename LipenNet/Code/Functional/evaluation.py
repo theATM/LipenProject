@@ -1,9 +1,10 @@
 import torch
 import sys
-import math
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sn
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_auc_score, RocCurveDisplay
+from torch.nn.functional import softmax
 
 import Code.Functional.utilities as u
 import Code.Dataloader.lipenset as dl
@@ -45,12 +46,15 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
     acc3_avg = ut.AverageMeter('Top 3 Accuracy', ':6.2f')
     y_true_all = []
     y_pred_all = []
+    prob_pred_all = []
 
-    class_names = ["Triangle", "Rules", "Rubber", "Pencil", "Pen", "None"]
+    class_names = ["Triangle", "Ruler", "Rubber", "Pencil", "Pen", "None"]
     class_names_pred = [class_name + ".P" for class_name in class_names]
     classes_count = len(class_names)
 
     conf_matrix_heatmap = None
+    roc_auc_avg = None
+    roc_fig = None
 
     with torch.no_grad():
         for i, data in enumerate(data_loader):
@@ -63,7 +67,7 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
             acc2_avg.update(acc2[0], inputs.size(0))
             acc3_avg.update(acc3[0], inputs.size(0))
             loss_avg.update(loss,inputs.size(0))
-
+            prob_pred_all += softmax(outputs, 1).tolist()
             _, pred = outputs.topk(1, 1, True, True)
             y_pred_all += pred.tolist()
             y_true_all += labels.tolist()
@@ -74,7 +78,25 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
 
     if not sys.gettrace():
         conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
-
+        roc_auc = roc_auc_score(y_true_all, prob_pred_all, average=None, multi_class='ovr')
+        roc_auc_avg = roc_auc_score(y_true_all, prob_pred_all, average='macro', multi_class='ovr')
+        y_true_binary = [[true == i for true in y_true_all] for i in range(classes_count)]
+        y_pred_binary = [[probs[i] for probs in prob_pred_all]for i in range(classes_count)]
+        rocs = [RocCurveDisplay.from_predictions(y_true_binary[i], y_pred_binary[i]) for i in range(classes_count)]
+        rocs_x = [roc.line_.get_xdata() for roc in rocs]
+        rocs_y = [roc.line_.get_ydata() for roc in rocs]
+        styles = ['-r', '-g', '-b', '-c', '-m', '-y']
+        roc_fig, roc_axs = plt.subplots(nrows=3, ncols=3, figsize=(15, 15))
+        roc_axs = roc_axs.flatten()
+        for i in [0, 2, 8]:
+            roc_axs[i].axis('off')
+        for i in range(classes_count):
+            roc_axs[1].plot(rocs_x[i], rocs_y[i], styles[i], label=f"{class_names[i]} - AUC={roc_auc[i]:.3f}")
+            if i != 0:
+                roc_ax = roc_axs[i+2]
+                roc_ax.plot(rocs_x[i], rocs_y[i], styles[i], label=f"{class_names[i]} - AUC={roc_auc[i]:.3f}")
+                roc_ax.legend(loc='lower right')
+        roc_axs[1].legend(loc='best', fontsize='x-small')
     precision = 0
     recall = 0
     f1_score = 0
@@ -104,7 +126,7 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
         if class_precision is not None and class_recall is not None and (class_precision != 0 or class_recall != 0):
             f1_score += (2 * class_precision * class_recall / (class_precision + class_recall)) * weight
 
-    return loss_avg, (acc_avg,acc2_avg,acc3_avg), precision, recall, f1_score, conf_matrix_heatmap
+    return loss_avg, (acc_avg,acc2_avg,acc3_avg), precision, recall, f1_score, conf_matrix_heatmap, roc_auc_avg, roc_fig
 
 
 def accuracy(outputs, labels , topk=(1,)):

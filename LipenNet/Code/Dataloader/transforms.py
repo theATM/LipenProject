@@ -1,5 +1,5 @@
 from PIL import Image, ImageStat, ImageOps, ImageEnhance
-from torchvision.utils import save_image
+import pickle
 import torch
 import torchvision.transforms as T
 import Code.Protocol.enums as en
@@ -59,10 +59,10 @@ class LipenTransform:
     transform = None
 
     def __init__(self, augmentation_type: en.AugmentationType, hparams: Hparams):
-        mean = hparams[hparams['dataset_name'].value + '_dataset_mean']  # type: ignore
-        std = hparams[hparams['dataset_name'].value + '_dataset_std']  # type: ignore
+        with open(f"{hparams['data_dir']}/{hparams['dataset_dir']}/{hparams['normalization_filename']}", 'rb') as n_f:
+            mean, std = pickle.load(n_f)
 
-        if augmentation_type == en.AugmentationType.Online:
+        if augmentation_type in (en.AugmentationType.Online, en.AugmentationType.Offline):
             self.transform = T.Compose([
                 T.Resize(hparams['resize_size']),
                 T.RandomVerticalFlip(hparams['vertical_flip_prob']),
@@ -93,9 +93,10 @@ class LipenTransform:
 
                 T.transforms.RandomApply(
                     [T.transforms.GaussianBlur(hparams['gaussian_blur_kernel_size'], hparams['gaussian_blur_sigma'])],
-                    p=hparams['gaussian_blur_prob']),
-                T.Normalize(mean=mean, std=std),
+                    p=hparams['gaussian_blur_prob'])
             ])
+            if augmentation_type == en.AugmentationType.Online:
+                self.transform = T.Compose([self.transform, T.Normalize(mean, std)])
         elif augmentation_type == en.AugmentationType.Rotation:
             self.transform = T.Compose([
                 T.ToTensor(),
@@ -111,5 +112,4 @@ class LipenTransform:
             self.transform = T.Compose([
                     T.ToTensor(),
                     T.Resize(hparams['resize_size']),
-
                 ])

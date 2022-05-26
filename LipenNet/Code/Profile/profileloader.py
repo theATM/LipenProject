@@ -21,6 +21,7 @@ class Hparams(TypedDict):
     valset_dir : str | None                             # eval set
     testset_dir : str | None                            # and testset , (if named "test" set as "test")
     label_filename : str | None                         #Name of the csv file with the labels
+    normalization_filename : str | None                 #Name of the pickle file with normalization info
     train_batch_size :int |None
     val_batch_size: int | None
     test_batch_size: int | None
@@ -48,30 +49,14 @@ class Hparams(TypedDict):
 
     clean_class_weights : list[float] | None
     unified_class_weights: list[float] | None
+    unified_augmented_class_weights: list[float] | None
     merged_class_weights: list[float] | None
+    merged_augmented_class_weights: list[float] | None
 
     #Eval Parameters
     val_device: en.Device | None
     epoch_per_eval : int | None
     val_criterion : en.CriterionType | None
-
-
-    #Normalizaton Parameters
-    clean_dataset_mean : list[float] | None
-    clean_dataset_std  : list[float] | None
-
-    unified_dataset_mean: list[float] | None
-    unified_dataset_std: list[float] | None
-
-    merged_dataset_mean: list[float] | None
-    merged_dataset_std:  list[float] | None
-
-    unified_augmented_dataset_mean: list[float] | None
-    unified_augmented_dataset_std: list[float] | None
-
-    merged_augmented_dataset_mean: list[float] | None
-    merged_augmented_dataset_std: list[float] | None
-
 
     #Augmentation Parameters
     augmentation_type : en.AugmentationType | None
@@ -170,6 +155,7 @@ __hparams  : Hparams = \
     "valset_dir" : None,
     "testset_dir" : None,
     "label_filename" : None,
+    "normalization_filename" : None,
     "train_batch_size" :None,
     "val_batch_size":  None,
     "test_batch_size":  None,
@@ -195,28 +181,14 @@ __hparams  : Hparams = \
     "reduction_mode": None,
     "clean_class_weights": None,
     "unified_class_weights": None,
+    "unified_augmented_class_weights": None,
     "merged_class_weights": None,
+    "merged_augmented_class_weights": None,
 
     #Eval Parameters
     "val_device":  None,
     "epoch_per_eval": None,
     "val_criterion": None,
-
-    # Normalizaton Parameters
-    "clean_dataset_mean": None,
-    "clean_dataset_std":  None,
-
-    "unified_dataset_mean":  None,
-    "unified_dataset_std":   None,
-
-    "merged_dataset_mean":   None,
-    "merged_dataset_std":   None,
-
-    "unified_augmented_dataset_mean":  None,
-    "unified_augmented_dataset_std":   None,
-
-    "merged_augmented_dataset_mean":   None,
-    "merged_augmented_dataset_std":   None,
 
     # Augmentation Parameters
     "augmentation_type":  None,
