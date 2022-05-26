@@ -36,17 +36,10 @@ class Lipenset(Dataset):
         self.augmentation_type = hparams['augmentation_type']
 
         self.transform_tool = None
-        match (self.augmentation_type or dataset_type):
-            case en.AugmentationType.Without:
-                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Without, hparams=hparams)
-            case en.DatasetType.Testset | en.DatasetType.ValSet | en.AugmentationType.Normalize:
-                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Normalize, hparams=hparams)
-            case en.AugmentationType.Rotation:
-                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Rotation, hparams=hparams)
-            case en.AugmentationType.Online:
-                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Online, hparams=hparams)
-            case en.AugmentationType.Offline:
-                self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Offline, hparams=hparams)
+        if dataset_type in [en.DatasetType.Testset, en.DatasetType.ValSet]:
+            self.transform_tool = t.LipenTransform(augmentation_type=en.AugmentationType.Normalize, hparams=hparams)
+        else:
+            self.transform_tool = t.LipenTransform(augmentation_type=self.augmentation_type, hparams=hparams)
 
         self.images :list[dict] = []
         image_files = dt.getImageFiles(self.dataset_path) #TODO - TypeError: an integer is required - warning
