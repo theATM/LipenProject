@@ -49,9 +49,9 @@ class Hparams(TypedDict):
 
     clean_class_weights : list[float] | None
     unified_class_weights: list[float] | None
-    unified_augmented_class_weights: list[float] | None
+    unaug_class_weights: list[float] | None
     merged_class_weights: list[float] | None
-    merged_augmented_class_weights: list[float] | None
+    meraug_class_weights: list[float] | None
 
     #Eval Parameters
     val_device: en.Device | None
@@ -182,9 +182,9 @@ __hparams  : Hparams = \
     "reduction_mode": None,
     "clean_class_weights": None,
     "unified_class_weights": None,
-    "unified_augmented_class_weights": None,
+    "unaug_class_weights": None,
     "merged_class_weights": None,
-    "merged_augmented_class_weights": None,
+    "meraug_class_weights": None,
 
     #Eval Parameters
     "val_device":  None,
