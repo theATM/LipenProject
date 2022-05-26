@@ -4,14 +4,14 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = CleanDataset
-dataset_name = CleanDataset
+dataset_dir = UniformDataset
+dataset_name = UniformDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = CleanDatasetLabel.csv
-normalization_filename = CleanDatasetMean.pickle
+label_filename = UniformDatasetLabel.csv
+normalization_filename = UniformDatasetMean.pickle
 #batch sizes
 train_batch_size = 8
 val_batch_size = 1

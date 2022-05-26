@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import shutil
+import numpy as np
 import torch
 import Code.Profile.profileloader as pl
 import Code.Protocol.enums as en
@@ -16,6 +17,7 @@ def main():
     torch.manual_seed(seed)
     random.seed(seed)
     torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
 
     hparams = pl.loadProfile(sys.argv)
     trainset = Lipenset(hparams, en.DatasetType.Trainset, shuffle=True)
