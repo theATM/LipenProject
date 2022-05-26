@@ -43,14 +43,15 @@ def plot(sour_img, imgs):
 
 
 def main():
+
     hparams: pl.Hparams = pl.loadProfile(sys.argv)
-    train_loader, _,_ = dl.loadData(hparams)
+    train_loader, _,_ = dl.loadData(hparams,load_train=True)
     train_loader = [next(iter(train_loader))]
 
-    seed = int(random.random() * 100 * random.random()) if True else 1525
-    torch.manual_seed(seed)
 
-    transform = tr.LipenTransform(augmentation_type=en.AugmentationType.Online, hparams=hparams)
+    seed = int(random.random() * 100 * random.random()) if False else 1525
+    torch.manual_seed(seed)
+    transform = tr.LipenTransform(augmentation_type=en.AugmentationType.Offline, hparams=hparams)
 
     for data in train_loader:
         images = data["path"]
