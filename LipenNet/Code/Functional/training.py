@@ -118,9 +118,9 @@ def train(
                     tmp = ((16 & extra) >> 4)
                     hard = (4 * tmp) | 1 - tmp
                     # recalculate class weights
-                    weights = class_weights[labels] * hard
+                    # weights = class_weights[labels] * hard
                     intermediate_losses = criterion(outputs, labels)
-                    loss = torch.mean(weights * intermediate_losses)
+                    loss = torch.mean(hard * intermediate_losses)
                 else:
                     loss = criterion(outputs, labels)
                 # Back propagate loss
