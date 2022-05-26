@@ -1,6 +1,8 @@
 import os
 import sys
+import random
 import shutil
+import torch
 import Code.Profile.profileloader as pl
 import Code.Protocol.enums as en
 from Code.Dataloader.lipenset import Lipenset
@@ -13,6 +15,11 @@ AUGMENTATIONS_COUNT = 2
 
 
 def main():
+    seed = 1410
+    torch.manual_seed(seed)
+    random.seed(seed)
+    torch.cuda.manual_seed(seed)
+
     hparams = pl.loadProfile(sys.argv)
     trainset = Lipenset(hparams, en.DatasetType.Trainset, shuffle=True)
 

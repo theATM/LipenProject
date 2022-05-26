@@ -56,6 +56,10 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
     roc_auc_avg = None
     roc_fig = None
 
+    precision = 0
+    recall = 0
+    f1_score = 0
+
     with torch.no_grad():
         for i, data in enumerate(data_loader):
             inputs = torch.autograd.Variable(data['image'].to(val_device, non_blocking=True))
@@ -72,11 +76,11 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
             y_pred_all += pred.tolist()
             y_true_all += labels.tolist()
 
-    conf_matrix = confusion_matrix(y_true_all, y_pred_all)
-    df_cm = pd.DataFrame(conf_matrix, index=[i for i in class_names],
-                         columns=[i for i in class_names_pred])
-
     if not sys.gettrace():
+        conf_matrix = confusion_matrix(y_true_all, y_pred_all)
+        df_cm = pd.DataFrame(conf_matrix, index=[i for i in class_names],
+                             columns=[i for i in class_names_pred])
+
         conf_matrix_heatmap = sn.heatmap(df_cm, annot=True).get_figure()
         roc_auc = roc_auc_score(y_true_all, prob_pred_all, average=None, multi_class='ovr')
         roc_auc_avg = roc_auc_score(y_true_all, prob_pred_all, average='macro', multi_class='ovr')
@@ -97,34 +101,31 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
                 roc_ax.plot(rocs_x[i], rocs_y[i], styles[i], label=f"{class_names[i]} - AUC={roc_auc[i]:.3f}")
                 roc_ax.legend(loc='lower right')
         roc_axs[1].legend(loc='best', fontsize='x-small')
-    precision = 0
-    recall = 0
-    f1_score = 0
 
-    class_precisions = []
-    class_recalls = []
+        class_precisions = []
+        class_recalls = []
 
-    cm_sum = conf_matrix.sum()
-    cm_col_sum = df_cm.sum('index')
-    cm_row_sum = df_cm.sum('columns')
+        cm_sum = conf_matrix.sum()
+        cm_col_sum = df_cm.sum('index')
+        cm_row_sum = df_cm.sum('columns')
 
-    for i in range(classes_count):
-        tp = conf_matrix[i][i]
-        fp = cm_col_sum[i] - tp
-        fn = cm_row_sum[i] - tp
-        weight = cm_row_sum[i] / cm_sum
-        class_precision = None
-        class_recall = None
-        if tp != 0 or fp != 0:
-            class_precision = tp / (tp + fp)
-            precision += class_precision * weight
-            class_precisions.append(class_precision)
-        if tp != 0 or fn != 0:
-            class_recall = tp / (tp + fn)
-            recall += class_recall * weight
-            class_recalls.append(class_recall)
-        if class_precision is not None and class_recall is not None and (class_precision != 0 or class_recall != 0):
-            f1_score += (2 * class_precision * class_recall / (class_precision + class_recall)) * weight
+        for i in range(classes_count):
+            tp = conf_matrix[i][i]
+            fp = cm_col_sum[i] - tp
+            fn = cm_row_sum[i] - tp
+            weight = cm_row_sum[i] / cm_sum
+            class_precision = None
+            class_recall = None
+            if tp != 0 or fp != 0:
+                class_precision = tp / (tp + fp)
+                precision += class_precision * weight
+                class_precisions.append(class_precision)
+            if tp != 0 or fn != 0:
+                class_recall = tp / (tp + fn)
+                recall += class_recall * weight
+                class_recalls.append(class_recall)
+            if class_precision is not None and class_recall is not None and (class_precision != 0 or class_recall != 0):
+                f1_score += (2 * class_precision * class_recall / (class_precision + class_recall)) * weight
 
     return loss_avg, (acc_avg,acc2_avg,acc3_avg), precision, recall, f1_score, conf_matrix_heatmap, roc_auc_avg, roc_fig
 

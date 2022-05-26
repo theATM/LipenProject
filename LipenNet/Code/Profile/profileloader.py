@@ -60,6 +60,7 @@ class Hparams(TypedDict):
 
     #Augmentation Parameters
     augmentation_type : en.AugmentationType | None
+    augmentation_count : int | None
     resize_size : tuple[int,int] | None
     vertical_flip_prob : float | None
     horizontal_flip_prob: float | None
@@ -192,6 +193,7 @@ __hparams  : Hparams = \
 
     # Augmentation Parameters
     "augmentation_type":  None,
+    "augmentation_count": None,
     "resize_size":  None,
     "vertical_flip_prob":   None,
     "horizontal_flip_prob":   None,

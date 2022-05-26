@@ -125,13 +125,12 @@ def train(
                     loss = torch.mean(hard * intermediate_losses)
                 else:
                     loss = criterion(outputs, labels)
+                # Normalize loss to account for batch accumulation
+                multi_batch_loss = loss / grad_per_batch
                 # Back propagate loss
-                loss.backward()
-                multi_batch_loss += loss
+                multi_batch_loss.backward()
                 # Calculate, minding gradient batch accumulation
                 if ((i + 1) % grad_per_batch) == 0 or single_batch_test is True:
-                    # Normalize loss to account for batch accumulation
-                    multi_batch_loss = multi_batch_loss / grad_per_batch
                     # Clipping the gradient
                     clip_grad_norm_(model.parameters(), max_norm=1)
                     # Update the weighs
