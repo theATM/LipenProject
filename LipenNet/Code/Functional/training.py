@@ -25,9 +25,11 @@ def main():
     train_device = torch.device(hparams['train_device'].value)
     if train_device == 'cuda': torch.cuda.empty_cache()    #Empty GPU Cache before Training starts
     # Set initial seed
-    torch.manual_seed(1410)
-    random.seed(1410)
-    torch.cuda.manual_seed(1410)
+    seed = 1410
+    torch.manual_seed(seed)
+    random.seed(seed)
+    torch.cuda.manual_seed(seed)
+    hparams['train_seed'] = seed
     # Load Data
     train_loader, val_loader, _ = dl.loadData(hparams,load_train=True,load_val=True)
     # Pick Model
