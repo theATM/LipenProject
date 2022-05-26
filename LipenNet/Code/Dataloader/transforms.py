@@ -78,12 +78,12 @@ class LipenTransform:
                                               hparams['color_jitter_hue'])],
                     p=hparams['color_jitter_prob']),
 
+                T.RandomEqualize(hparams['random_equalize_prob']),
+                T.RandomInvert(hparams['random_invert_prob']),
                 EnhanceBrightness(hparams['enhance_brightness_brightness_intensity'],
                                   hparams['enhance_brightness_max_brightness'],
                                   hparams['enhance_brightness_prob']),
-                T.RandomEqualize(hparams['random_equalize_prob']),
                 T.RandomGrayscale(hparams['random_greyscale_prob']),
-                T.RandomInvert(hparams['random_invert_prob']),
 
                 T.ToTensor(),
 

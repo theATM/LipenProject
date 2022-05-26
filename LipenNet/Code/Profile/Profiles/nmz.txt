@@ -47,7 +47,7 @@ epoch_per_eval = 10
 val_criterion = CrossEntropy
 
 #Augmentation Parameters
-augmentation_type = Normalize
+augmentation_type = Offline
 augmentation_count = 1
 resize_size = (244,244)
 vertical_flip_prob = 0.3
