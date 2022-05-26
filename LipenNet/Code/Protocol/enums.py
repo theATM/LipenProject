@@ -5,9 +5,9 @@ class DatasetName(Enum):
     RawDataset: str = "raw"
     CleanDataset: str = "clean"
     UniformDataset: str = "unified"
-    UnaugDataset: str = "unified_augmented"
-    MeraugDataset: str = "merged"
-    MergedDatasetAugmented: str = "merged_augmented"
+    UnaugDataset: str = "unaug"
+    MergedDataset: str = "merged"
+    MeraugDataset: str = "meraug"
 
 
 class DatasetType(Enum):
