@@ -61,7 +61,7 @@ class Lipenset(Dataset):
             extras_code = int(label_line_info[3])
             is_hard = ((16 & extras_code) >> 4)
             weight = (4 * is_hard) | 1 - is_hard
-            image_info = [image_file, int(label_line_info[1]), int(label_line_info[2]), extras_code, weight]
+            image_info = [image_file, int(label_line_info[1]), weight]
             image_info = np.array(image_info, dtype=object)
             self.images.append(image_info)
 

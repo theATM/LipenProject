@@ -37,7 +37,6 @@ def main():
     print("Evaluation Finished")
 
 
-
 def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduction_mode):
     model.eval()
     acc_avg = ut.AverageMeter('Accuracy', ':6.2f')

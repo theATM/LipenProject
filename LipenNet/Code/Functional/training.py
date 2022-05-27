@@ -2,7 +2,6 @@ import random
 import sys
 import time
 import numpy as np
-import cProfile
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim import lr_scheduler
@@ -108,8 +107,8 @@ def train(
         # Train one epoch
         model.train()
         for i, data in enumerate(train_loader):
-            image_dims = (data.size()[0], int(data[0][4]), int(data[0][5]), int(data[0][6]))
-            image = np.reshape(data[:, 7:], image_dims)
+            image_dims = (data.size()[0], int(data[0][2]), int(data[0][3]), int(data[0][4]))
+            image = np.reshape(data[:, 5:], image_dims)
             inputs = torch.autograd.Variable(image.to(train_device, non_blocking=True))
             labels = torch.autograd.Variable(data[:, 0].long().to(train_device, non_blocking=True))
             with torch.set_grad_enabled(True):
@@ -118,11 +117,10 @@ def train(
                 # Calculate loss
                 if reduction_mode == en.ReductionMode.none:
                     #Load extras:
-                    weights = torch.autograd.Variable(data[:,3].to(train_device, non_blocking=True))
+                    weights = torch.autograd.Variable(data[:, 1].to(train_device, non_blocking=True))
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
                     data[:, 3] = eva.weightChange(outputs,labels,weights)
-
                 else:
                     loss = criterion(outputs, labels)
                 # Normalize loss to account for batch accumulation
