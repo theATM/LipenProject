@@ -231,7 +231,7 @@ def train(
         #print("\nFinished Training\n")
     # Save Last Model
     if save_mode != en.SavingMode.none_save:
-        save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg, "current_loss": vloss_avg}
+        save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg.avg, "current_loss": vloss_avg}
         ml.saveModel(model, optimizer, scheduler, hparams, save_params)
     if interactive:
         print("Saved model on epoch %d at the end ot training" % max_epoch)

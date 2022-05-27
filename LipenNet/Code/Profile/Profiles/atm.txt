@@ -13,8 +13,8 @@ testset_dir = test
 label_filename = Uniform20DatasetLabel.csv
 normalization_filename = Uniform20DatasetMean.pickle
 #batch sizes
-train_batch_size = 4
-val_batch_size = 1
+train_batch_size = 8
+val_batch_size = 4
 test_batch_size = 1
 #Load Params
 save_dir_path = Models/Saves/
@@ -22,14 +22,14 @@ save_mode = all_save
 
 ############################################
 # Training params
-initial_learning_rate= 0.0001
-weight_decay = 4e-1
+initial_learning_rate= 0.00001
+weight_decay = 7e-2
 frozen_initial_layers = 0
-scheduler_list= [50,100,150]
+scheduler_list= [50,100,300,500,700,900]
 scheduler_gamma=0.75
-grad_per_batch = 1
+grad_per_batch = 8
 single_batch_test= True
-max_epoch = 200
+max_epoch = 1000
 train_device = Cuda
 model= Resnet18
 optimizer = AdamW
