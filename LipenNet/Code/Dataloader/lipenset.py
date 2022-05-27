@@ -49,15 +49,15 @@ class Lipenset(Dataset):
         label_lines = list(filter(lambda x: x != "\n", label_lines))
 
         image_file_pattern = re.compile(f".*{set_dir}/(.*)")
-        image_file_parsed = sorted([image_file_pattern.match(image_file).group(1) for image_file in image_files])
-        label_lines_split_raw = sorted([label_line.split(';') for label_line in label_lines])
+        image_file_parsed = [image_file_pattern.match(image_file).group(1) for image_file in image_files]
+        label_lines_split_raw = [label_line.split(';') for label_line in label_lines]
         label_lines_split = list(filter(lambda x: x[0] in image_file_parsed, label_lines_split_raw))
 
         if len(label_lines_split) != len(image_files) or len(image_files) != self.image_amount:
             print("Different image number in csv and dirs")
             sys.exit(1)
 
-        for label_line_info, image_file in zip(label_lines_split, image_files):
+        for label_line_info, image_file in zip(sorted(label_lines_split), sorted(image_files)):
             image_info = [image_file, int(label_line_info[1]), int(label_line_info[2]), int(label_line_info[3])]
             image_info = np.array(image_info, dtype=object)
             self.images.append(image_info)
