@@ -67,6 +67,7 @@ class LipenTransform:
                 T.Resize(hparams['resize_size']),
                 T.RandomVerticalFlip(hparams['vertical_flip_prob']),
                 T.RandomHorizontalFlip(hparams['horizontal_flip_prob']),
+                RandomRotationTransform(hparams['rotate_angles']),
                 T.transforms.RandomApply(
                     [T.RandomRotation(degrees=hparams['random_rotation_degrees'])],
                     p=hparams['random_rotation_prob']),

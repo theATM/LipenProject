@@ -118,13 +118,16 @@ def train(
                 # Calculate loss
                 if reduction_mode == en.ReductionMode.none:
                     #Load extras:
-                    extra = torch.autograd.Variable(data[:, 2].long().to(train_device, non_blocking=True))
-                    tmp = ((16 & extra) >> 4)
-                    hard = (4 * tmp) | 1 - tmp
+                    weights = torch.autograd.Variable(data[:,6].to(train_device, non_blocking=True))
+                    #extra = torch.autograd.Variable(data[:, 2].long().to(train_device, non_blocking=True))
+                    #tmp = ((16 & extra) >> 4)
+                    #hard = (4 * tmp) | 1 - tmp
                     # recalculate class weights
                     # weights = class_weights[labels] * hard
                     intermediate_losses = criterion(outputs, labels)
-                    loss = torch.mean(hard * intermediate_losses)
+                    loss = torch.mean(weights * intermediate_losses)
+                    eva.weightChange(outputs,labels,weights)
+
                 else:
                     loss = criterion(outputs, labels)
                 # Normalize loss to account for batch accumulation
