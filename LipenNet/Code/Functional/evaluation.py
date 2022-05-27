@@ -1,5 +1,6 @@
 import torch
 import sys
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sn
@@ -62,8 +63,10 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
 
     with torch.no_grad():
         for i, data in enumerate(data_loader):
-            inputs = torch.autograd.Variable(data['image'].to(val_device, non_blocking=True))
-            labels = torch.autograd.Variable(data['label'].to(val_device, non_blocking=True))
+            image_dims = (data.size()[0], int(data[0][3]), int(data[0][4]), int(data[0][5]))
+            image = np.reshape(data[:, 6:], image_dims)
+            inputs = torch.autograd.Variable(image.to(val_device, non_blocking=True))
+            labels = torch.autograd.Variable(data[:, 0].long().to(val_device, non_blocking=True))
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             acc, acc2 ,acc3 = accuracy(outputs,labels,topk=(1,2,3))

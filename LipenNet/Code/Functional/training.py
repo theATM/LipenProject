@@ -1,7 +1,8 @@
 import random
 import sys
 import time
-
+import numpy as np
+import cProfile
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim import lr_scheduler
@@ -77,7 +78,6 @@ def main():
                     interactive=True,save_mode=save_mode)
 
 
-
 def train(
             hparams : pl.Hparams, train_device : str,
             train_loader, val_loader,
@@ -108,15 +108,17 @@ def train(
         # Train one epoch
         model.train()
         for i, data in enumerate(train_loader):
-            inputs = torch.autograd.Variable(data['image'].to(train_device, non_blocking=True))
-            labels = torch.autograd.Variable(data['label'].to(train_device, non_blocking=True))
+            image_dims = (data.size()[0], int(data[0][3]), int(data[0][4]), int(data[0][5]))
+            image = np.reshape(data[:, 6:], image_dims)
+            inputs = torch.autograd.Variable(image.to(train_device, non_blocking=True))
+            labels = torch.autograd.Variable(data[:, 0].long().to(train_device, non_blocking=True))
             with torch.set_grad_enabled(True):
                 # Calculate Network Function (what Network thinks of this image)
                 outputs = model(inputs)
                 # Calculate loss
                 if reduction_mode == en.ReductionMode.none:
                     #Load extras:
-                    extra = torch.autograd.Variable(data['extra'].to(train_device, non_blocking=True))
+                    extra = torch.autograd.Variable(data[:, 2].long().to(train_device, non_blocking=True))
                     tmp = ((16 & extra) >> 4)
                     hard = (4 * tmp) | 1 - tmp
                     # recalculate class weights

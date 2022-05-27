@@ -1,12 +1,14 @@
 import re
 import random
 import sys
+import torch
 from torch.utils.data import Dataset, DataLoader
 import Code.Protocol.enums as en
 from Code.Profile.profileloader import Hparams
 from PIL import Image
 import Code.Dataloader.transforms as t
 import Code.Dataloader.datatools as dt
+import numpy as np
 
 
 class Lipenset(Dataset):
@@ -35,7 +37,7 @@ class Lipenset(Dataset):
         else:
             self.transform_tool = t.LipenTransform(augmentation_type=self.augmentation_type, hparams=hparams)
 
-        self.images :list[dict] = []
+        self.images = []
         image_files = dt.getImageFiles(self.dataset_path) #TODO - TypeError: an integer is required - warning
         self.image_amount = len(image_files)
         if self.image_amount == 0:
@@ -56,27 +58,28 @@ class Lipenset(Dataset):
             sys.exit(1)
 
         for label_line_info, image_file in zip(label_lines_split, image_files):
-            image_dict = {"label": int(label_line_info[1]),
-                          "path": image_file,
-                          "sub": int(label_line_info[2]),
-                          "extra": int(label_line_info[3])}
-            self.images.append(image_dict)
+            image_info = [image_file, int(label_line_info[1]), int(label_line_info[2]), int(label_line_info[3])]
+            image_info = np.array(image_info, dtype=object)
+            self.images.append(image_info)
 
         # Mix up the data
         if self.shuffle:
             random.shuffle(self.images)
 
+        self.images = np.array(self.images, dtype=object)
+
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, idx):
-        image_dict = self.images[idx]
-        imagep = Image.open(image_dict["path"])
+        image_info = self.images[idx]
+        imagep = Image.open(image_info[0])
         image = self.transform_tool.transform(imagep)
-        image_dict["image"] = image
         imagep.close()
-        #Add weights
-        return image_dict
+        image_info = image_info[1:]
+        image_info = np.append(image_info, image.size()).astype("float32")
+        image_info = np.append(image_info, image)
+        return image_info
 
 
 def loadData(hparams : Hparams, load_train:bool = False,load_val:bool= False,load_test:bool= False):
