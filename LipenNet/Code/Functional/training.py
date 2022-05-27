@@ -121,7 +121,7 @@ def train(
                     weights = torch.autograd.Variable(data[:,3].to(train_device, non_blocking=True))
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
-                    eva.weightChange(outputs,labels,weights)
+                    data[:, 3] = eva.weightChange(outputs,labels,weights)
 
                 else:
                     loss = criterion(outputs, labels)

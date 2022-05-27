@@ -163,11 +163,10 @@ def accuracy(outputs, labels , topk=(1,)):
 def weightChange(outputs, labels, weights):
     with torch.no_grad():
         _,predictions = outputs.topk(1,1,True,True)
-        corrects = predictions.eq(labels.contiguous().view(1, -1).expand_as(predictions))
+        wrongs = ~predictions.t().eq(labels.contiguous().view(1, -1))
         delta = 0.2
-        wrongs = 1 - corrects
-        weights += delta * wrongs * weights
-        #TODO - sufit
+        return weights + delta * wrongs * weights
+        #TODO sufit
 
 if __name__ == '__main__':
     main()
