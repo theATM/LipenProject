@@ -159,5 +159,14 @@ def accuracy(outputs, labels , topk=(1,)):
 #         for i in range(classes_count):
 #             false_positives +=
 
+
+def weightChange(outputs, labels, weights):
+    with torch.no_grad():
+        _,predictions = outputs.topk(1,1,True,True)
+        wrongs = ~predictions.t().eq(labels.contiguous().view(1, -1))
+        delta = 0.2
+        return weights + delta * wrongs * weights
+        #TODO sufit
+
 if __name__ == '__main__':
     main()

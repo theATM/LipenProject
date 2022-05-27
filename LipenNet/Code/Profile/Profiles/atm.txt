@@ -4,14 +4,14 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = CleanDataset
-dataset_name = CleanDataset
+dataset_dir = Uniform20Dataset
+dataset_name = Uniform20Dataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = CleanDatasetLabel.csv
-normalization_filename = CleanDatasetMean.pickle
+label_filename = Uniform20DatasetLabel.csv
+normalization_filename = Uniform20DatasetMean.pickle
 #batch sizes
 train_batch_size = 4
 val_batch_size = 1
@@ -28,18 +28,19 @@ frozen_initial_layers = 0
 scheduler_list= [50,100,150]
 scheduler_gamma=0.75
 grad_per_batch = 1
-single_batch_test= False
+single_batch_test= True
 max_epoch = 200
 train_device = Cuda
-model= Resnet18_pretrained
+model= Resnet18
 optimizer = AdamW
-criterion = WeightedCrossEntropy
+criterion = CrossEntropy
 reduction_mode= none
-clean_class_weights= [1.07,1.19,1,1.01,0.81,0.99]
+clean_class_weights= [1.07,1.19,2,1.01,0.81,0.99]
 unified_class_weights= [1,1,1,1,1,1]
 unaug_class_weights= [1,1,1,1,1,1]
 merged_class_weights= [1,1,1,1,1,1]
 meraug_class_weights= [1,1,1,1,1,1]
+uniform20_class_weights=[1,1,1,1,1,0.5]
 
 #Eval Parameters
 val_device =  Cpu
@@ -48,7 +49,7 @@ val_criterion = CrossEntropy
 
 #Augmentation Parameters
 augmentation_type = Normalize
-augmentation_count = 1
+augmentation_count = 19
 resize_size = (244,244)
 vertical_flip_prob = 0.5
 horizontal_flip_prob = 0.5

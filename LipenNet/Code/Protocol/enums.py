@@ -8,6 +8,7 @@ class DatasetName(Enum):
     UnaugDataset: str = "unaug"
     MergedDataset: str = "merged"
     MeraugDataset: str = "meraug"
+    Uniform20Dataset: str = "uniform20"
 
 
 class DatasetType(Enum):
