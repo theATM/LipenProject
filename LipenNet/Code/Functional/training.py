@@ -108,8 +108,8 @@ def train(
         # Train one epoch
         model.train()
         for i, data in enumerate(train_loader):
-            image_dims = (data.size()[0], int(data[0][3]), int(data[0][4]), int(data[0][5]))
-            image = np.reshape(data[:, 6:], image_dims)
+            image_dims = (data.size()[0], int(data[0][4]), int(data[0][5]), int(data[0][6]))
+            image = np.reshape(data[:, 7:], image_dims)
             inputs = torch.autograd.Variable(image.to(train_device, non_blocking=True))
             labels = torch.autograd.Variable(data[:, 0].long().to(train_device, non_blocking=True))
             with torch.set_grad_enabled(True):
