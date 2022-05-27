@@ -116,7 +116,7 @@ def getModelName(hparams:Hparams):
 def pickCriterion(hparams:Hparams,purpose : en.CriterionPurpose = en.CriterionPurpose.EvalCriterion):
     criterion = None
     criterion_type = hparams['criterion'] if purpose == en.CriterionPurpose.TrainCriterion else hparams['val_criterion']
-    reduction = hparams['reduction_mode'].value
+    reduction = hparams['reduction_mode'].value if purpose == en.CriterionPurpose.TrainCriterion else "mean"
     match criterion_type:
         case en.CriterionType.CrossEntropy:
             criterion = torch.nn.CrossEntropyLoss(reduction=reduction)
