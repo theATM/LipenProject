@@ -63,8 +63,8 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
 
     with torch.no_grad():
         for i, data in enumerate(data_loader):
-            image_dims = (data.size()[0], int(data[0][3]), int(data[0][4]), int(data[0][5]))
-            image = np.reshape(data[:, 6:], image_dims)
+            image_dims = (data.size()[0], int(data[0][4]), int(data[0][5]), int(data[0][6]))
+            image = np.reshape(data[:, 7:], image_dims)
             inputs = torch.autograd.Variable(image.to(val_device, non_blocking=True))
             labels = torch.autograd.Variable(data[:, 0].long().to(val_device, non_blocking=True))
             outputs = model(inputs)
