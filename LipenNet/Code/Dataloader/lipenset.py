@@ -65,11 +65,11 @@ class Lipenset(Dataset):
             image_info = np.array(image_info, dtype=object)
             self.images.append(image_info)
 
+        self.images = np.array(self.images)
+
         # Mix up the data
         if self.shuffle:
-            random.shuffle(self.images)
-
-        self.images = np.array(self.images, dtype=object)
+            self.shuffle_images()
 
     def __len__(self):
         return len(self.images)
@@ -83,6 +83,9 @@ class Lipenset(Dataset):
         image_info = np.append(image_info, image.size()).astype("float32")
         image_info = np.append(image_info, image)
         return image_info
+
+    def shuffle_images(self):
+        np.random.shuffle(self.images)
 
 
 def loadData(hparams : Hparams, load_train:bool = False,load_val:bool= False,load_test:bool= False):
@@ -102,7 +105,7 @@ def loadData(hparams : Hparams, load_train:bool = False,load_val:bool= False,loa
     test_loader = None
 
     if load_train:
-        train_loader = DataLoader(trainset, batch_size=hparams['train_batch_size'], shuffle=True)
+        train_loader = DataLoader(trainset, batch_size=hparams['train_batch_size'], shuffle=False)
     if load_val:
         eval_loader = DataLoader(valset, batch_size=hparams['val_batch_size'], shuffle=False)
     if load_test:

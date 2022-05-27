@@ -120,7 +120,7 @@ def train(
                     weights = torch.autograd.Variable(data[:, 1].to(train_device, non_blocking=True))
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
-                    data[:, 1] = eva.weightChange(outputs,labels,weights)
+                    train_loader.dataset.images[i*image_dims[0]:(i+1)*image_dims[0], 2] = eva.weightChange(outputs, labels, weights).cpu()
                 else:
                     loss = criterion(outputs, labels)
                 # Normalize loss to account for batch accumulation
@@ -203,6 +203,7 @@ def train(
                 else:
                     print('Eval  | Epoch, {epoch:d} |  #  | Precision, {precision: .3f} | Recall, {recall: .3f} | F1 Score, {f1_score: .3f}'
                           .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item()))
+        train_loader.dataset.shuffle_images()
 
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
