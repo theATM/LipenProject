@@ -74,7 +74,6 @@ class Lipenset(Dataset):
     def __len__(self):
         return len(self.images)
 
-    @profile
     def __getitem__(self, idx):
         image_info = self.images[idx]
         imagep = Image.open(image_info[0])
