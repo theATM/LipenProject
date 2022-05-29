@@ -6,13 +6,12 @@ import pandas as pd
 import seaborn as sn
 from sklearn.metrics import confusion_matrix, roc_auc_score, RocCurveDisplay
 from torch.nn.functional import softmax
+from torch.utils.tensorboard import SummaryWriter
 
-import Code.Functional.utilities as u
 import Code.Dataloader.lipenset as dl
 import Code.Profile.profileloader as pl
 import Code.Architecture.modelloader as ml
 import Code.Functional.utilities as ut
-import Code.Protocol.enums as en
 
 
 def main():
@@ -21,23 +20,45 @@ def main():
     # Empty GPU Cache before Training starts
     if val_device == 'cuda': torch.cuda.empty_cache()
     # Load Data
-    _ , _,testloader  = dl.loadData(hparams)
+    _, _, testloader = dl.loadData(hparams, load_test=True)
     model = ml.pickModel(hparams)
     model.to(val_device)
     criterion = ml.pickCriterion(hparams)
+    if hparams['load_model']:
+        ml.load_model_test(model, val_device, hparams)
+    writer = SummaryWriter("Logs/Runs/" + "TEST_" + ml.getModelName(hparams, withdataset=True))
 
-    #Eval
+    # Evaluate on test
     print("\nEvaluation Started")
     model.eval()
-    loss, accuracy = evaluate(model,criterion, testloader,val_device, hparams)
-    print('Evaluation Loss on all test images, %2.2f' % (loss.avg))
-    print('Evaluation Accuracy on all test images, %2.2f' % (accuracy[0].avg))
-    print('Evaluation TOP 2 Accuracy on all test images, %2.2f' % (accuracy[1].avg))
-    print('Evaluation TOP 3 Accuracy on all test images, %2.2f' % (accuracy[2].avg))
+    loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
+        evaluate(model, criterion, testloader, val_device)
+    print('Evaluation Loss on all test images, %2.2f' % loss_val.avg)
+    print('Evaluation Accuracy on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation TOP 2 Accuracy on all test images, %2.2f' % acc2_val.avg)
+    print('Evaluation TOP 3 Accuracy on all test images, %2.2f' % acc3_val.avg)
+    print('Evaluation Precision on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation Recall on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation F1 Score on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation average AUC-ROC on all test images, %2.2f' % acc_val.avg)
     print("Evaluation Finished")
+    if writer is not None:
+        writer.add_scalar("Loss/eval", loss_val.avg, 0)
+        writer.add_scalar("Accuracy/eval", acc_val.avg, 0)
+        writer.add_scalar("Top2Acc/eval", acc2_val.avg, 0)
+        writer.add_scalar("Top3Acc/eval", acc3_val.avg, 0)
+        writer.add_scalar("Precision/eval", precision, 0)
+        writer.add_scalar("Recall/eval", recall, 0)
+        writer.add_scalar("F1 Score/eval", f1_score, 0)
+        if not sys.gettrace():
+            writer.add_scalar("Average AUC-ROC", roc_auc_avg, 0)
+            writer.add_figure("ROC", roc_fig, 0)
+            writer.add_figure("Confusion matrix", conf_matrix, 0)
+            plt.close('all')
+        writer.close()
 
 
-def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduction_mode):
+def evaluate(model, criterion, data_loader, val_device):
     model.eval()
     acc_avg = ut.AverageMeter('Accuracy', ':6.2f')
     loss_avg = ut.AverageMeter('Loss', ':6.2f')
@@ -68,11 +89,11 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
             labels = torch.autograd.Variable(data[:, 0].long().to(val_device, non_blocking=True))
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-            acc, acc2 ,acc3 = accuracy(outputs,labels,topk=(1,2,3))
+            acc, acc2, acc3 = accuracy(outputs, labels, topk=(1, 2, 3))
             acc_avg.update(acc[0], inputs.size(0))
             acc2_avg.update(acc2[0], inputs.size(0))
             acc3_avg.update(acc3[0], inputs.size(0))
-            loss_avg.update(loss,inputs.size(0))
+            loss_avg.update(loss, inputs.size(0))
             prob_pred_all += softmax(outputs, 1).tolist()
             _, pred = outputs.topk(1, 1, True, True)
             y_pred_all += pred.tolist()
@@ -134,7 +155,7 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
 
 def accuracy(outputs, labels , topk=(1,)):
     """Computes the accuracy over the top predictions for the specified values of k"""
-    with torch.no_grad(): # disables recalculation of gradients
+    with torch.no_grad():  # disables recalculation of gradients
         maxk = max(topk)
         batch_size = labels.size(0)
         _, pred = outputs.topk(maxk, 1, True, True)
@@ -145,6 +166,7 @@ def accuracy(outputs, labels , topk=(1,)):
             correct_k = correct[:k].contiguous().view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
 
 # def precision_micro(outputs, labels):
 #     with torch.no_grad():
@@ -159,13 +181,13 @@ def accuracy(outputs, labels , topk=(1,)):
 #             false_positives +=
 
 
-def weightChange(outputs, labels, weights):
+def weight_change(outputs, labels, weights):
     with torch.no_grad():
-        # returns unnormalized output for prediction class , and prediction class nr
+        # returns unnormalized output for prediction class, and prediction class nr
         _, predictions = outputs.topk(1,1,True,True)
-        # cheks if prediction is correct
+        # checks if prediction is correct
         wrongs = torch.squeeze(~predictions.t().eq(labels.contiguous().view(1, -1)))
-        # check against the sufit aka the max value of the weigh
+        # check against the sufit aka the max value of the weight
         delta = 0.05
         ceiling = (weights + delta * wrongs) < 5
         return weights + delta * ceiling * wrongs
