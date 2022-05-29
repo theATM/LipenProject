@@ -165,14 +165,14 @@ def train(
             evaluation_time = time.perf_counter()
             # Evaluate on valset
             loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
-                eva.evaluate(model,val_criterion,val_loader,train_device, hparams, reduction_mode)
+                eva.evaluate(model, val_criterion, val_loader, train_device)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
             model_saved: bool = False
             if save_mode != en.SavingMode.none_save and save_mode != en.SavingMode.last_save:
                 if save_mode == en.SavingMode.all_save or (save_mode == en.SavingMode.best_save and best_acc >= acc_val.avg):
                     best_acc = acc_val.avg if best_acc >= acc_val.avg else best_acc
-                    save_params = {"current_epoch":epoch,"current_acc":acc_val.avg,"current_loss":loss_val.avg}
+                    save_params = {"current_epoch": epoch, "current_acc": acc_val.avg, "current_loss": loss_val.avg}
                     ml.save_model(model, optimizer, scheduler, hparams, save_params)
                     model_saved = True
 
@@ -207,17 +207,22 @@ def train(
     model.eval()
     # Post Training Evaluation on valset (for comparisons)
     vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
-        eva.evaluate(model, val_criterion, val_loader, train_device, hparams, reduction_mode)
+        eva.evaluate(model, val_criterion, val_loader, train_device)
     if interactive:
         # Print results on eval set
         print("\nTraining concluded\n")
-        print("Evaluation on validation set")
-        print('Evaluation accuracy at the end on all validation images, %2.2f' % vacc_avg.avg.item())
-        print('Top 2 at the end on all validation images, %2.2f' % vacc2_avg.avg.item())
-        print('Top 3 at the end on all validation images, %2.2f' % vacc3_avg.avg.item())
-        print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg.item())
-        print('Confusion matrix\n:')
-        print(conf_matrix)
+        print("Evaluation on validation set:")
+        print('Evaluation Loss on validation set, %2.2f' % vloss_avg.avg)
+        print('Evaluation Accuracy on validation set, %2.2f' % vacc_avg.avg)
+        print('Evaluation TOP 2 Accuracy on validation set, %2.2f' % vacc2_avg.avg)
+        print('Evaluation TOP 3 Accuracy on validation set, %2.2f' % vacc3_avg.avg)
+        print('Evaluation Precision on validation set, %2.2f' % precision)
+        print('Evaluation Recall on validation set, %2.2f' % recall)
+        print('Evaluation F1 Score on validation set, %2.2f' % f1_score)
+        print('Evaluation average AUC-ROC on validation set, %2.2f' % roc_auc_avg)
+        print("Evaluation Finished")
+    if writer is not None:
+        writer.close()
     # Save Last Model
     if save_mode != en.SavingMode.none_save:
         save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg.avg, "current_loss": vloss_avg}

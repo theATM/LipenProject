@@ -6,13 +6,12 @@ import pandas as pd
 import seaborn as sn
 from sklearn.metrics import confusion_matrix, roc_auc_score, RocCurveDisplay
 from torch.nn.functional import softmax
+from torch.utils.tensorboard import SummaryWriter
 
-import Code.Functional.utilities as u
 import Code.Dataloader.lipenset as dl
 import Code.Profile.profileloader as pl
 import Code.Architecture.modelloader as ml
 import Code.Functional.utilities as ut
-import Code.Protocol.enums as en
 
 
 def main():
@@ -21,23 +20,45 @@ def main():
     # Empty GPU Cache before Training starts
     if val_device == 'cuda': torch.cuda.empty_cache()
     # Load Data
-    _, _, testloader = dl.loadData(hparams)
+    _, _, testloader = dl.loadData(hparams, load_test=True)
     model = ml.pickModel(hparams)
     model.to(val_device)
     criterion = ml.pickCriterion(hparams)
+    if hparams['load_model']:
+        ml.load_model_test(model, val_device, hparams)
+    writer = SummaryWriter("Logs/Runs/" + "TEST_" + ml.getModelName(hparams, withdataset=True))
 
-    #Eval
+    # Evaluate on test
     print("\nEvaluation Started")
     model.eval()
-    loss, accuracy = evaluate(model, criterion, testloader, val_device, hparams)
-    print('Evaluation Loss on all test images, %2.2f' % (loss.avg))
-    print('Evaluation Accuracy on all test images, %2.2f' % (accuracy[0].avg))
-    print('Evaluation TOP 2 Accuracy on all test images, %2.2f' % (accuracy[1].avg))
-    print('Evaluation TOP 3 Accuracy on all test images, %2.2f' % (accuracy[2].avg))
+    loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
+        evaluate(model, criterion, testloader, val_device)
+    print('Evaluation Loss on all test images, %2.2f' % loss_val.avg)
+    print('Evaluation Accuracy on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation TOP 2 Accuracy on all test images, %2.2f' % acc2_val.avg)
+    print('Evaluation TOP 3 Accuracy on all test images, %2.2f' % acc3_val.avg)
+    print('Evaluation Precision on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation Recall on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation F1 Score on all test images, %2.2f' % acc_val.avg)
+    print('Evaluation average AUC-ROC on all test images, %2.2f' % acc_val.avg)
     print("Evaluation Finished")
+    if writer is not None:
+        writer.add_scalar("Loss/eval", loss_val.avg, 0)
+        writer.add_scalar("Accuracy/eval", acc_val.avg, 0)
+        writer.add_scalar("Top2Acc/eval", acc2_val.avg, 0)
+        writer.add_scalar("Top3Acc/eval", acc3_val.avg, 0)
+        writer.add_scalar("Precision/eval", precision, 0)
+        writer.add_scalar("Recall/eval", recall, 0)
+        writer.add_scalar("F1 Score/eval", f1_score, 0)
+        if not sys.gettrace():
+            writer.add_scalar("Average AUC-ROC", roc_auc_avg, 0)
+            writer.add_figure("ROC", roc_fig, 0)
+            writer.add_figure("Confusion matrix", conf_matrix, 0)
+            plt.close('all')
+        writer.close()
 
 
-def evaluate(model, criterion, data_loader, val_device, hparams: pl.Hparams, reduction_mode):
+def evaluate(model, criterion, data_loader, val_device):
     model.eval()
     acc_avg = ut.AverageMeter('Accuracy', ':6.2f')
     loss_avg = ut.AverageMeter('Loss', ':6.2f')
