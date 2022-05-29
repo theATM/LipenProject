@@ -55,6 +55,10 @@ class Hparams(TypedDict):
     meraug_class_weights: list[float] | None
     uniform20_class_weights: list[float] | None
 
+    # Weights change params
+    weights_delta: float | None
+    weights_ceiling: float | None
+
     #Eval Parameters
     val_device: en.Device | None
     epoch_per_eval : int | None
@@ -189,6 +193,10 @@ __hparams  : Hparams = \
     "merged_class_weights": None,
     "meraug_class_weights": None,
     "uniform20_class_weights":None,
+
+    # Weights change params
+    "weights_delta": None,
+    "weights_ceiling": None,
 
     #Eval Parameters
     "val_device":  None,

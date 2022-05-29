@@ -125,7 +125,7 @@ def train(
                     #Load extras:
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
-                    train_loader.dataset.images[i*image_dims[0]:(i+1)*image_dims[0], 2] = eva.weight_change(outputs, labels, weights).cpu()
+                    train_loader.dataset.images[i*image_dims[0]:(i+1)*image_dims[0], 2] = eva.weight_change(outputs, labels, weights, hparams).cpu()
                 else:
                     loss = criterion(outputs, labels)
                 # Normalize loss to account for batch accumulation

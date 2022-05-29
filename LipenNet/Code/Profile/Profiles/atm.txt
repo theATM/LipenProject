@@ -43,6 +43,10 @@ merged_class_weights= [1,1,1,1,1,1]
 meraug_class_weights= [1,1,1,1,1,1]
 uniform20_class_weights=[1,1,1,1,1,0.5]
 
+#Weights change params
+weights_delta = 0.05
+weights_ceiling = 5.0
+
 #Eval Parameters
 val_device =  Cpu
 epoch_per_eval = 10
