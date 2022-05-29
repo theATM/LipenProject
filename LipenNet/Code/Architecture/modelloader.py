@@ -6,7 +6,6 @@ from datetime import datetime
 from Code.Profile.profileloader import Hparams
 import os
 import shutil
-from typing import Optional
 import Code.Architecture.model as m
 
 
@@ -36,6 +35,11 @@ def pickModel(hparams: Hparams):
 
         case en.ModelType.Alexnet:
             model = m.AlexNet(num_classes=6)
+
+        case en.ModelType.ConvNext:
+            model = torchvision.models.convnext_small(pretrained=True)
+            model.classifier.append(torch.nn.Linear(1000,6))
+
     return model
 
 

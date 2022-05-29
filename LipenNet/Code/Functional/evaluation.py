@@ -29,7 +29,7 @@ def main():
     # Load Data
     match val_type:
         case en.ValType.train:
-            dataloader ,_ , _ = dl.loadData(hparams, load_train=True)
+            dataloader , _ , _ = dl.loadData(hparams, load_train=True)
         case en.ValType.val:
             _, dataloader, _ = dl.loadData(hparams, load_val=True)
         case en.ValType.test:

@@ -13,7 +13,7 @@ testset_dir = test
 label_filename = UnaugDatasetLabel.csv
 normalization_filename = UnaugDatasetMean.pickle
 #batch sizes
-train_batch_size = 64
+train_batch_size = 4
 val_batch_size = 1
 test_batch_size = 1
 #Load Params
@@ -27,24 +27,24 @@ weight_decay = 7e-1
 frozen_initial_layers = 0
 scheduler_list= [50,75,100,150]
 scheduler_gamma=0.75
-early_stop_evals = 5
+early_stop_evals = 12
 grad_per_batch = 1
 single_batch_test= False
 max_epoch = 200
 train_device = Cuda
-model = Resnet18
+model = ConvNext
 optimizer = AdamW
 criterion = CrossEntropy
 reduction_mode= mean
 clean_class_weights= [1,1,1,1,1,1]
 uniform_class_weights= [1,1,1,1,1,1]
-unaug_class_weights= [1,1,1,1,1,1]
+unaug_class_weights= [1,1,1,1,1,0.5]
 merged_class_weights= [1,1,1,1,1,1]
 meraug_class_weights= [1,1,1,1,1,1]
 uniform20_class_weights=[1,1,1,1,1,1]
 
 #Weights change params
-weights_delta = 0.05
+weights_delta = 0.2
 weights_ceiling = 5.0
 
 #Eval Parameters

@@ -36,6 +36,7 @@ class ModelType(Enum):
     Resnet18_pretrained :str = "Resnet18_pretrained"
     Resnet18 : str = "Resnet18"
     Alexnet : str = "Alexnet"
+    ConvNext: str = "ConvNext"
 
 
 class AugmentationType(Enum):

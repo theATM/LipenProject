@@ -25,7 +25,7 @@ def main():
     train_device = torch.device(hparams['train_device'].value)
     if train_device == 'cuda': torch.cuda.empty_cache()    #Empty GPU Cache before Training starts
     # Set initial seed
-    seed = 1410
+    seed = 19
     torch.manual_seed(seed)
     random.seed(seed)
     torch.cuda.manual_seed(seed)
@@ -165,7 +165,7 @@ def train(
         scheduler.step()
 
         # Evaluate in some epochs:
-        if epoch % epoch_per_eval == 0 and epoch != 0:
+        if epoch % epoch_per_eval == 0:
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
