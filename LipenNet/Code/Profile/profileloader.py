@@ -38,6 +38,7 @@ class Hparams(TypedDict):
     frozen_initial_layers: int | None
     scheduler_list: list[int] | None
     scheduler_gamma : float | None
+    early_stop_evals: int | None
     grad_per_batch : int | None
     single_batch_test: bool | None
     max_epoch: int | None
@@ -53,6 +54,10 @@ class Hparams(TypedDict):
     merged_class_weights: list[float] | None
     meraug_class_weights: list[float] | None
     uniform20_class_weights: list[float] | None
+
+    # Weights change params
+    weights_delta: float | None
+    weights_ceiling: float | None
 
     #Eval Parameters
     val_device: en.Device | None
@@ -173,6 +178,7 @@ __hparams  : Hparams = \
     "frozen_initial_layers": None,
     "scheduler_list" : None,
     "scheduler_gamma" : None,
+    "early_stop_evals" : None,
     "grad_per_batch" : None,
     "single_batch_test": None,
     "max_epoch":None,
@@ -187,6 +193,10 @@ __hparams  : Hparams = \
     "merged_class_weights": None,
     "meraug_class_weights": None,
     "uniform20_class_weights":None,
+
+    # Weights change params
+    "weights_delta": None,
+    "weights_ceiling": None,
 
     #Eval Parameters
     "val_device":  None,
