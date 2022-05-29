@@ -35,8 +35,8 @@ def main():
     # Pick Model
     model = ml.pickModel(hparams).to(train_device)
     # Pick Other Elements
-    criterion = ml.pickCriterion(hparams,en.CriterionPurpose.TrainCriterion)
-    val_criterion = ml.pickCriterion(hparams, en.CriterionPurpose.EvalCriterion)
+    criterion = ml.pickCriterion(hparams,train_device,en.CriterionPurpose.TrainCriterion)
+    val_criterion = ml.pickCriterion(hparams,train_device, en.CriterionPurpose.EvalCriterion)
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
     # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Runs)

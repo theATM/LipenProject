@@ -37,7 +37,7 @@ def main():
 
     model = ml.pickModel(hparams)
     model.to(val_device)
-    criterion = ml.pickCriterion(hparams)
+    criterion = ml.pickCriterion(hparams,val_device)
     if hparams['load_model']:
         ml.load_model_test(model, val_device, hparams)
     # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Eval)
