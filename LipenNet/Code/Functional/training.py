@@ -165,7 +165,7 @@ def train(
         scheduler.step()
 
         # Evaluate in some epochs:
-        if epoch % epoch_per_eval == 0:
+        if epoch % epoch_per_eval == 0 and epoch != 0:
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
@@ -210,12 +210,12 @@ def train(
                           .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item()))
 
             # Early stopping:
-            if loss_val.avg < min_eval_loss:
+            if loss_val.avg <= min_eval_loss:
                 min_eval_loss = loss_val.avg
                 evals_no_loss_decr = 0
             else:
                 evals_no_loss_decr += 1
-            if evals_no_loss_decr >= hparams['early_stop_evals']:
+            if evals_no_loss_decr > hparams['early_stop_evals']:
                 print(f"\nEarly stop - evaluation loss has not decreased for {evals_no_loss_decr} evaluation periods.")
                 early_stop_epoch = epoch
                 break
