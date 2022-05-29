@@ -4,7 +4,7 @@ from enum import Enum
 class DatasetName(Enum):
     RawDataset: str = "raw"
     CleanDataset: str = "clean"
-    UniformDataset: str = "unified"
+    UniformDataset: str = "uniform"
     UnaugDataset: str = "unaug"
     MergedDataset: str = "merged"
     MeraugDataset: str = "meraug"

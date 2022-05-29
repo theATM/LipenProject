@@ -40,7 +40,7 @@ def main():
     optimizer = ml.pickOptimizer(model,hparams)
     scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=hparams['scheduler_list'],gamma=hparams["scheduler_gamma"])
     # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Runs)
-    writer = SummaryWriter("Logs/Runs/"+ml.getModelName(hparams))
+    writer = SummaryWriter("Logs/Runs/"+ml.getModelName(hparams,withdataset=True))
     # Declare range of epochs to iterate
     max_epoch = hparams['max_epoch']
     min_epoch = 0
@@ -111,13 +111,13 @@ def train(
             image = np.reshape(data[:, 5:], image_dims)
             inputs = torch.autograd.Variable(image.to(train_device, non_blocking=True))
             labels = torch.autograd.Variable(data[:, 0].long().to(train_device, non_blocking=True))
+            weights = torch.autograd.Variable(data[:, 1].to(train_device, non_blocking=True))
             with torch.set_grad_enabled(True):
                 # Calculate Network Function (what Network thinks of this image)
                 outputs = model(inputs)
                 # Calculate loss
                 if reduction_mode == en.ReductionMode.none:
                     #Load extras:
-                    weights = torch.autograd.Variable(data[:, 1].to(train_device, non_blocking=True))
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
                     train_loader.dataset.images[i*image_dims[0]:(i+1)*image_dims[0], 2] = eva.weightChange(outputs, labels, weights).cpu()
