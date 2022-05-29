@@ -4,14 +4,14 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = UniformDataset
-dataset_name = UniformDataset
+dataset_dir = CleanDataset
+dataset_name = CleanDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = UniformDatasetLabel.csv
-normalization_filename = UniformDatasetMean.pickle
+label_filename = CleanDatasetLabel.csv
+normalization_filename = CleanDatasetMean.pickle
 #batch sizes
 train_batch_size = 64
 val_batch_size = 1
@@ -25,18 +25,18 @@ save_mode = all_save
 initial_learning_rate= 1e-5
 weight_decay = 7e-1
 frozen_initial_layers = 0
-scheduler_list= [50,100,150,200]
+scheduler_list= [50,75,100,150]
 scheduler_gamma=0.75
-early_stop_evals = 3
-grad_per_batch = 8
+early_stop_evals = 5
+grad_per_batch = 1
 single_batch_test= False
-max_epoch = 400
+max_epoch = 200
 train_device = Cuda
-model = Resnet18_pretrained
+model = Resnet18
 optimizer = AdamW
 criterion = CrossEntropy
-reduction_mode= none
-clean_class_weights= [1.07,1.19,1,1.01,0.81,0.99]
+reduction_mode= mean
+clean_class_weights= [1,1,1,1,1,1]
 uniform_class_weights= [1,1,1,1,1,1]
 unaug_class_weights= [1,1,1,1,1,1]
 merged_class_weights= [1,1,1,1,1,1]
@@ -49,7 +49,7 @@ weights_ceiling = 5.0
 
 #Eval Parameters
 val_device =  Cpu
-epoch_per_eval = 2
+epoch_per_eval = 5
 val_criterion = CrossEntropy
 
 #Augmentation Parameters
