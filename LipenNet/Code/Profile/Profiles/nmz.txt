@@ -4,14 +4,14 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = CleanDataset
-dataset_name = CleanDataset
+dataset_dir = UnaugDataset
+dataset_name = UnaugDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = CleanDatasetLabel.csv
-normalization_filename = CleanDatasetMean.pickle
+label_filename = UnaugDatasetLabel.csv
+normalization_filename = UnaugDatasetMean.pickle
 #batch sizes
 train_batch_size = 64
 val_batch_size = 1
@@ -41,7 +41,7 @@ uniform_class_weights= [1,1,1,1,1,1]
 unaug_class_weights= [1,1,1,1,1,1]
 merged_class_weights= [1,1,1,1,1,1]
 meraug_class_weights= [1,1,1,1,1,1]
-uniform20_class_weights=[1,1,1,1,1,0.5]
+uniform20_class_weights=[1,1,1,1,1,1]
 
 #Weights change params
 weights_delta = 0.05
@@ -49,7 +49,7 @@ weights_ceiling = 5.0
 
 #Eval Parameters
 val_device =  Cpu
-epoch_per_eval = 5
+epoch_per_eval = 2
 val_criterion = CrossEntropy
 
 #Augmentation Parameters
