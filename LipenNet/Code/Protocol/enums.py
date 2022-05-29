@@ -64,5 +64,11 @@ class ReductionMode(Enum):
     sum = "sum"
 
 
+class ValType(Enum):
+    train = 'train'
+    val = 'val'
+    test = 'test'
+
+
 
 
