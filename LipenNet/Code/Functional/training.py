@@ -215,7 +215,7 @@ def train(
                 evals_no_loss_decr = 0
             else:
                 evals_no_loss_decr += 1
-            if evals_no_loss_decr > hparams['early_stop_evals']:
+            if evals_no_loss_decr >= hparams['early_stop_evals']:
                 print(f"\nEarly stop - evaluation loss has not decreased for {evals_no_loss_decr} evaluation periods.")
                 early_stop_epoch = epoch
                 break
