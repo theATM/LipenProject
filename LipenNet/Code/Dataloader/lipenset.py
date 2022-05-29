@@ -60,7 +60,7 @@ class Lipenset(Dataset):
         for label_line_info, image_file in zip(sorted(label_lines_split), sorted(image_files)):
             extras_code = int(label_line_info[3])
             is_hard = ((16 & extras_code) >> 4)
-            weight = (4 * is_hard) | 1 - is_hard
+            weight = (2 * is_hard) | 1 - is_hard
             image_info = [image_file, int(label_line_info[1]), weight]
             image_info = np.array(image_info, dtype=object)
             self.images.append(image_info)

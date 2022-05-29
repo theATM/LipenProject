@@ -4,16 +4,16 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = UnaugDataset
-dataset_name = UnaugDataset
+dataset_dir = UniformDataset
+dataset_name = UniformDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = UnaugDatasetLabel.csv
-normalization_filename = UnaugDatasetMean.pickle
+label_filename = UniformDatasetLabel.csv
+normalization_filename = UniformDatasetMean.pickle
 #batch sizes
-train_batch_size = 64
+train_batch_size = 8
 val_batch_size = 1
 test_batch_size = 1
 #Load Params
@@ -23,7 +23,7 @@ save_mode = all_save
 ############################################
 # Training params
 initial_learning_rate= 1e-5
-weight_decay = 7e-2
+weight_decay = 7e-1
 frozen_initial_layers = 0
 scheduler_list= [50,100,150,200]
 scheduler_gamma=0.75
@@ -31,7 +31,7 @@ grad_per_batch = 8
 single_batch_test= False
 max_epoch = 400
 train_device = Cuda
-model = Resnet18
+model = Resnet18_pretrained
 optimizer = AdamW
 criterion = CrossEntropy
 reduction_mode= none
