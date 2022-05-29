@@ -21,7 +21,7 @@ def main():
     # Empty GPU Cache before Training starts
     if val_device == 'cuda': torch.cuda.empty_cache()
     # Load Data
-    _ , _,testloader  = dl.loadData(hparams)
+    _, _, testloader = dl.loadData(hparams)
     model = ml.pickModel(hparams)
     model.to(val_device)
     criterion = ml.pickCriterion(hparams)
@@ -29,7 +29,7 @@ def main():
     #Eval
     print("\nEvaluation Started")
     model.eval()
-    loss, accuracy = evaluate(model,criterion, testloader,val_device, hparams)
+    loss, accuracy = evaluate(model, criterion, testloader, val_device, hparams)
     print('Evaluation Loss on all test images, %2.2f' % (loss.avg))
     print('Evaluation Accuracy on all test images, %2.2f' % (accuracy[0].avg))
     print('Evaluation TOP 2 Accuracy on all test images, %2.2f' % (accuracy[1].avg))
@@ -37,7 +37,7 @@ def main():
     print("Evaluation Finished")
 
 
-def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduction_mode):
+def evaluate(model, criterion, data_loader, val_device, hparams: pl.Hparams, reduction_mode):
     model.eval()
     acc_avg = ut.AverageMeter('Accuracy', ':6.2f')
     loss_avg = ut.AverageMeter('Loss', ':6.2f')
@@ -68,11 +68,11 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
             labels = torch.autograd.Variable(data[:, 0].long().to(val_device, non_blocking=True))
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-            acc, acc2 ,acc3 = accuracy(outputs,labels,topk=(1,2,3))
+            acc, acc2, acc3 = accuracy(outputs, labels, topk=(1, 2, 3))
             acc_avg.update(acc[0], inputs.size(0))
             acc2_avg.update(acc2[0], inputs.size(0))
             acc3_avg.update(acc3[0], inputs.size(0))
-            loss_avg.update(loss,inputs.size(0))
+            loss_avg.update(loss, inputs.size(0))
             prob_pred_all += softmax(outputs, 1).tolist()
             _, pred = outputs.topk(1, 1, True, True)
             y_pred_all += pred.tolist()
@@ -134,7 +134,7 @@ def evaluate(model,criterion, data_loader,val_device, hparams: pl.Hparams, reduc
 
 def accuracy(outputs, labels , topk=(1,)):
     """Computes the accuracy over the top predictions for the specified values of k"""
-    with torch.no_grad(): # disables recalculation of gradients
+    with torch.no_grad():  # disables recalculation of gradients
         maxk = max(topk)
         batch_size = labels.size(0)
         _, pred = outputs.topk(maxk, 1, True, True)
@@ -145,6 +145,7 @@ def accuracy(outputs, labels , topk=(1,)):
             correct_k = correct[:k].contiguous().view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+
 
 # def precision_micro(outputs, labels):
 #     with torch.no_grad():
@@ -159,13 +160,13 @@ def accuracy(outputs, labels , topk=(1,)):
 #             false_positives +=
 
 
-def weightChange(outputs, labels, weights):
+def weight_change(outputs, labels, weights):
     with torch.no_grad():
-        # returns unnormalized output for prediction class , and prediction class nr
+        # returns unnormalized output for prediction class, and prediction class nr
         _, predictions = outputs.topk(1,1,True,True)
-        # cheks if prediction is correct
+        # checks if prediction is correct
         wrongs = torch.squeeze(~predictions.t().eq(labels.contiguous().view(1, -1)))
-        # check against the sufit aka the max value of the weigh
+        # check against the sufit aka the max value of the weight
         delta = 0.05
         ceiling = (weights + delta * wrongs) < 5
         return weights + delta * ceiling * wrongs

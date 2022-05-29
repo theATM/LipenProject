@@ -58,7 +58,7 @@ def main():
     ml.savePrepareDir(hparams)
     # Load model if required
     if hparams['load_model']:
-        load_params = ml.loadModel(model,optimizer,scheduler,train_device,hparams)
+        load_params = ml.load_model(model, optimizer, scheduler, train_device, hparams)
         if "min_epoch" in load_params:
             min_epoch = load_params["current_epoch"]
 
@@ -120,7 +120,7 @@ def train(
                     #Load extras:
                     intermediate_losses = criterion(outputs, labels)
                     loss = torch.mean(weights * intermediate_losses)
-                    train_loader.dataset.images[i*image_dims[0]:(i+1)*image_dims[0], 2] = eva.weightChange(outputs, labels, weights).cpu()
+                    train_loader.dataset.images[i*image_dims[0]:(i+1)*image_dims[0], 2] = eva.weight_change(outputs, labels, weights).cpu()
                 else:
                     loss = criterion(outputs, labels)
                 # Normalize loss to account for batch accumulation
@@ -138,9 +138,9 @@ def train(
                     # Resets multi batch loss sum
                     multi_batch_loss = 0.0
                 # Calculate Accuracy
-                c_acc, c_acc2, c_acc3 = eva.accuracy(outputs,labels,topk=(1,2,3))
+                c_acc, c_acc2, c_acc3 = eva.accuracy(outputs, labels, topk=(1, 2, 3))
                 # Update Statistics
-                acc.update(c_acc[0],inputs.size(0))
+                acc.update(c_acc[0], inputs.size(0))
                 acc2.update(c_acc2[0], inputs.size(0))
                 acc3.update(c_acc3[0], inputs.size(0))
                 avg_loss.update(loss,inputs.size(0)) #TODO check if loss is correct!
@@ -160,8 +160,7 @@ def train(
         scheduler.step()
 
         # Evaluate in some epochs:
-
-        if epoch % epoch_per_eval == 0 :
+        if epoch % epoch_per_eval == 0:
             model.eval()
             evaluation_time = time.perf_counter()
             # Evaluate on valset
@@ -169,12 +168,12 @@ def train(
                 eva.evaluate(model,val_criterion,val_loader,train_device, hparams, reduction_mode)
             if train_device == 'cuda:0': torch.cuda.empty_cache()
             # Save Model Checkpoint
-            model_saved :bool = False
+            model_saved: bool = False
             if save_mode != en.SavingMode.none_save and save_mode != en.SavingMode.last_save:
                 if save_mode == en.SavingMode.all_save or (save_mode == en.SavingMode.best_save and best_acc >= acc_val.avg):
                     best_acc = acc_val.avg if best_acc >= acc_val.avg else best_acc
                     save_params = {"current_epoch":epoch,"current_acc":acc_val.avg,"current_loss":loss_val.avg}
-                    ml.saveModel(model,optimizer,scheduler,hparams,save_params)
+                    ml.save_model(model, optimizer, scheduler, hparams, save_params)
                     model_saved = True
 
             # Record Statistics
@@ -209,10 +208,8 @@ def train(
     # Post Training Evaluation on valset (for comparisons)
     vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
         eva.evaluate(model, val_criterion, val_loader, train_device, hparams, reduction_mode)
-    # Post Training Evaluation on testset (for true accuracy) - do not do that
-    # tloss_avg, (tacc_avg, tacc2_avg, tacc3_avg) = eva.evaluate(model,criterion,test_loader,train_device,hparams)
     if interactive:
-        #Print results on eval set
+        # Print results on eval set
         print("\nTraining concluded\n")
         print("Evaluation on validation set")
         print('Evaluation accuracy at the end on all validation images, %2.2f' % vacc_avg.avg.item())
@@ -221,20 +218,13 @@ def train(
         print('Average loss at the end on all validation images, %2.2f' % vloss_avg.avg.item())
         print('Confusion matrix\n:')
         print(conf_matrix)
-        # Print results on test set - do not do that
-        #print("\nEvaluation on test set")
-        #print('Evaluation accuracy on all test images, %2.2f' % tacc_avg.avg)
-        #print('Top 2 at the end on all test images, %2.2f' % tacc2_avg.avg)
-        #print('Top 3 at the end on all test images, %2.2f' % tacc3_avg.avg)
-        #print('Average loss on all test images, %2.2f' % tloss_avg.avg)
-        #print("\nFinished Training\n")
     # Save Last Model
     if save_mode != en.SavingMode.none_save:
         save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg.avg, "current_loss": vloss_avg}
-        ml.saveModel(model, optimizer, scheduler, hparams, save_params)
+        ml.save_model(model, optimizer, scheduler, hparams, save_params)
     if interactive:
         print("Saved model on epoch %d at the end ot training" % max_epoch)
-        print("Whole training took %f.2 s",time.perf_counter() - train_time)
+        print("Whole training took %f.2 s", time.perf_counter() - train_time)
         print("Bye")
 
     return vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg)

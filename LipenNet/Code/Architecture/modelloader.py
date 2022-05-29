@@ -39,7 +39,7 @@ def pickModel(hparams:Hparams):
     return model
 
 
-def loadModel(model,optimizer,scheduler,load_device,hparams:Hparams):
+def load_model(model, optimizer, scheduler, load_device, hparams: Hparams):
     load_path = hparams['load_model_path']
     # Load File:
     model_load_dict = torch.load(load_path, map_location=load_device)
@@ -55,7 +55,7 @@ def loadModel(model,optimizer,scheduler,load_device,hparams:Hparams):
     return load_params
 
 
-def saveModel(model,optimizer,scheduler,hparams:Hparams,save_params:dict):
+def save_model(model, optimizer, scheduler, hparams:Hparams, save_params:dict):
     # Create Savable copy of model
     model_states = copy.deepcopy(model.state_dict())
     optim_states = copy.deepcopy(optimizer.state_dict())
