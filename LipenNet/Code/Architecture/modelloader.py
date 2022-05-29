@@ -104,11 +104,15 @@ def savePrepareDir(hparams:Hparams):
     shutil.copyfile(hparams["profile_file"],profile_file_path)
 
 
-def getModelName(hparams:Hparams):
+def getModelName(hparams:Hparams,withdataset=False):
     if 'save_dir_name' not in hparams:
         now = datetime.now()  # Used to differentiate saved models
         now_str = now.strftime("%d.%m.%Y_%H:%M")
-        save_dir_name = str(hparams["model"].value) + "_" + now_str
+        if withdataset:
+            dataset_name =  str(hparams["dataset_name"].value ) + "_"
+        else:
+            dataset_name= ""
+        save_dir_name = str(hparams["model"].value) + "_" + dataset_name + now_str
         hparams['save_dir_name'] = save_dir_name
     return hparams['save_dir_name']
 
