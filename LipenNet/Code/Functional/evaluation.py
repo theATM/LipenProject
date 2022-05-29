@@ -12,48 +12,63 @@ import Code.Dataloader.lipenset as dl
 import Code.Profile.profileloader as pl
 import Code.Architecture.modelloader as ml
 import Code.Functional.utilities as ut
+import Code.Protocol.enums as en
 
 
 def main():
+    if len(sys.argv) < 4:
+        print("Add more run arguments")
+        sys.exit(-1)
+    val_type: en.ValType = en.ValType[sys.argv[1]]
+    sys.argv = [sys.argv[0]] + sys.argv[-2:]
     hparams: pl.Hparams = pl.loadProfile(sys.argv)
     val_device = torch.device(hparams['val_device'].value)
     # Empty GPU Cache before Training starts
     if val_device == 'cuda': torch.cuda.empty_cache()
+
     # Load Data
-    _, _, testloader = dl.loadData(hparams, load_test=True)
+    match val_type:
+        case en.ValType.train:
+            dataloader ,_ , _ = dl.loadData(hparams, load_train=True)
+        case en.ValType.val:
+            _, dataloader, _ = dl.loadData(hparams, load_val=True)
+        case en.ValType.test:
+            _, _, dataloader = dl.loadData(hparams, load_test=True)
+
     model = ml.pickModel(hparams)
     model.to(val_device)
     criterion = ml.pickCriterion(hparams)
     if hparams['load_model']:
         ml.load_model_test(model, val_device, hparams)
-    writer = SummaryWriter("Logs/Runs/" + "TEST_" + ml.getModelName(hparams, withdataset=True))
+    # Add tensorboard writer (use it with (in terminal): tensorboard --logdir=Logs/Eval)
+    writer = SummaryWriter("Logs/Eval/" + val_type.value.upper() + "_" + ml.getModelName(hparams, withdataset=True))
 
-    # Evaluate on test
+    # Evaluate on chosen set
     print("\nEvaluation Started")
     model.eval()
     loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
-        evaluate(model, criterion, testloader, val_device)
-    print('Evaluation Loss on all test images, %2.2f' % loss_val.avg)
-    print('Evaluation Accuracy on all test images, %2.2f' % acc_val.avg)
-    print('Evaluation TOP 2 Accuracy on all test images, %2.2f' % acc2_val.avg)
-    print('Evaluation TOP 3 Accuracy on all test images, %2.2f' % acc3_val.avg)
-    print('Evaluation Precision on all test images, %2.2f' % acc_val.avg)
-    print('Evaluation Recall on all test images, %2.2f' % acc_val.avg)
-    print('Evaluation F1 Score on all test images, %2.2f' % acc_val.avg)
-    print('Evaluation average AUC-ROC on all test images, %2.2f' % acc_val.avg)
+        evaluate(model, criterion, dataloader, val_device)
+    print('Evaluation Loss on all %s images, %2.2f' % (val_type.value , loss_val.avg.item()))
+    print('Evaluation Accuracy on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
+    print('Evaluation TOP 2 Accuracy on all %s images, %2.2f' %  (val_type.value ,acc2_val.avg.item()))
+    print('Evaluation TOP 3 Accuracy on all %s images, %2.2f' % (val_type.value , acc3_val.avg.item()))
+    print('Evaluation Precision on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
+    print('Evaluation Recall on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
+    print('Evaluation F1 Score on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
+    print('Evaluation average AUC-ROC on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
     print("Evaluation Finished")
     if writer is not None:
-        writer.add_scalar("Loss/eval", loss_val.avg, 0)
-        writer.add_scalar("Accuracy/eval", acc_val.avg, 0)
-        writer.add_scalar("Top2Acc/eval", acc2_val.avg, 0)
-        writer.add_scalar("Top3Acc/eval", acc3_val.avg, 0)
-        writer.add_scalar("Precision/eval", precision, 0)
-        writer.add_scalar("Recall/eval", recall, 0)
-        writer.add_scalar("F1 Score/eval", f1_score, 0)
+        writer.add_text("Loss/" + val_type.value, str(loss_val.avg.item()))
+        writer.add_text("Accuracy/"  + val_type.value, str(acc_val.avg.item()))
+        writer.add_text("Top2Acc/"+ val_type.value, str(acc2_val.avg.item()))
+        writer.add_text("Top3Acc/"+ val_type.value, str(acc3_val.avg.item()))
+        writer.add_text("Precision/"+ val_type.value, str(precision))
+        writer.add_text("Recall/"+ val_type.value, str(recall))
+        writer.add_text("F1 Score/"+ val_type.value, str(f1_score))
         if not sys.gettrace():
-            writer.add_scalar("Average AUC-ROC", roc_auc_avg, 0)
-            writer.add_figure("ROC", roc_fig, 0)
-            writer.add_figure("Confusion matrix", conf_matrix, 0)
+            writer.add_text("Average AUC-ROC/" + val_type.value, str(roc_auc_avg))
+            writer.add_figure("ROC/"+ val_type.value, roc_fig, 0)
+            writer.add_figure("Confusion matrix/"+ val_type.value, conf_matrix, 0)
             plt.close('all')
         writer.close()
 
