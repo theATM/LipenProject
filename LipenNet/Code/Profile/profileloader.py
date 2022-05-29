@@ -48,7 +48,7 @@ class Hparams(TypedDict):
     reduction_mode : en.ReductionMode | None
 
     clean_class_weights : list[float] | None
-    unified_class_weights: list[float] | None
+    uniform_class_weights: list[float] | None
     unaug_class_weights: list[float] | None
     merged_class_weights: list[float] | None
     meraug_class_weights: list[float] | None
@@ -182,7 +182,7 @@ __hparams  : Hparams = \
     "criterion": None,
     "reduction_mode": None,
     "clean_class_weights": None,
-    "unified_class_weights": None,
+    "uniform_class_weights": None,
     "unaug_class_weights": None,
     "merged_class_weights": None,
     "meraug_class_weights": None,

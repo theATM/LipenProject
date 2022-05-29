@@ -162,14 +162,13 @@ def accuracy(outputs, labels , topk=(1,)):
 def weightChange(outputs, labels, weights):
     with torch.no_grad():
         # returns unnormalized output for prediction class , and prediction class nr
-        _,predictions = outputs.topk(1,1,True,True)
+        _, predictions = outputs.topk(1,1,True,True)
         # cheks if prediction is correct
-        wrongs =  ~predictions.t().eq(labels.contiguous().view(1, -1))
+        wrongs = torch.squeeze(~predictions.t().eq(labels.contiguous().view(1, -1)))
         # check against the sufit aka the max value of the weigh
         delta = 0.05
-        sufit = (weights + delta * wrongs) < 5
-        weights = weights + torch.squeeze(delta * sufit * wrongs)
-        return weights
+        ceiling = (weights + delta * wrongs) < 5
+        return weights + delta * ceiling * wrongs
 
 
 if __name__ == '__main__':
