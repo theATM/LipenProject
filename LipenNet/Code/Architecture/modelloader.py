@@ -127,7 +127,7 @@ def getModelName(hparams: Hparams, withdataset=False):
     return hparams['save_dir_name']
 
 
-def pickCriterion(hparams: Hparams, purpose: en.CriterionPurpose = en.CriterionPurpose.EvalCriterion):
+def pickCriterion(hparams: Hparams, device :str, purpose: en.CriterionPurpose = en.CriterionPurpose.EvalCriterion):
     criterion = None
     criterion_type = hparams['criterion'] if purpose == en.CriterionPurpose.TrainCriterion else hparams['val_criterion']
     reduction = hparams['reduction_mode'].value if purpose == en.CriterionPurpose.TrainCriterion else "mean"
@@ -136,7 +136,8 @@ def pickCriterion(hparams: Hparams, purpose: en.CriterionPurpose = en.CriterionP
             criterion = torch.nn.CrossEntropyLoss(reduction=reduction)
         case en.CriterionType.WeightedCrossEntropy:
             #do not use with reduction set as none (weights in classes wil be calculated twice)
-            criterion = torch.nn.CrossEntropyLoss(weight = hparams[hparams['dataset_name']+'_class_weights'],reduction=reduction)
+            weights = torch.tensor(hparams[hparams['dataset_name'].value+'_class_weights']).to(device)
+            criterion = torch.nn.CrossEntropyLoss(weight = weights,reduction=reduction)
     return criterion
 
 
