@@ -134,6 +134,9 @@ def pickCriterion(hparams: Hparams, purpose: en.CriterionPurpose = en.CriterionP
     match criterion_type:
         case en.CriterionType.CrossEntropy:
             criterion = torch.nn.CrossEntropyLoss(reduction=reduction)
+        case en.CriterionType.WeightedCrossEntropy:
+            #do not use with reduction set as none (weights in classes wil be calculated twice)
+            criterion = torch.nn.CrossEntropyLoss(weight = hparams[hparams['dataset_name']+'_class_weights'],reduction=reduction)
     return criterion
 
 
