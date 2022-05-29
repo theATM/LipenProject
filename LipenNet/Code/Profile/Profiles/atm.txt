@@ -27,6 +27,7 @@ weight_decay = 7e-2
 frozen_initial_layers = 0
 scheduler_list= [25,50,100,200]
 scheduler_gamma=0.75
+early_stop_evals = 3
 grad_per_batch = 16
 single_batch_test= False
 max_epoch = 250

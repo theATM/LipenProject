@@ -53,7 +53,7 @@ def main():
     # Get Criterion weights
     class_weights = torch.tensor(hparams[hparams['dataset_name'].value + '_class_weights']).to(train_device)
     # Get criterion reductin mode
-    reduction_mode =  hparams['reduction_mode']
+    reduction_mode = hparams['reduction_mode']
     # Prepare Save dir
     ml.savePrepareDir(hparams)
     # Load model if required
@@ -86,7 +86,10 @@ def train(
             interactive: bool, save_mode : en.SavingMode
 
          ):
-
+    # Evaluations without evaluation loss decreasing
+    evals_no_loss_decr = 0
+    min_eval_loss = float('inf')
+    early_stop_epoch = None
     # Track best acc for smarter savepoint creation
     best_acc = 0
     # Measure training time
@@ -190,6 +193,7 @@ def train(
                     writer.add_figure("Confusion matrix", conf_matrix, epoch)
                     writer.add_figure("ROC", roc_fig, epoch)
                     plt.close('all')
+
             # Print Statistics
             if interactive:
                 print('Eval  | Epoch, {epoch:d} |  #  | Saved, {model_saved:s} | Used Time, {epoch_time:.2f} s |'
@@ -202,6 +206,18 @@ def train(
                 else:
                     print('Eval  | Epoch, {epoch:d} |  #  | Precision, {precision: .3f} | Recall, {recall: .3f} | F1 Score, {f1_score: .3f}'
                           .format(epoch=epoch, precision=precision.item(), recall=recall.item(), f1_score=f1_score.item()))
+
+            # Early stopping:
+            if loss_val.avg < min_eval_loss:
+                min_eval_loss = loss_val.avg
+                evals_no_loss_decr = 0
+            else:
+                evals_no_loss_decr += 1
+            if evals_no_loss_decr >= hparams['early_stop_evals']:
+                print(f"\nEarly stop - evaluation loss has not decreased for {evals_no_loss_decr} evaluation periods.")
+                early_stop_epoch = epoch
+                break
+
         train_loader.dataset.shuffle_images()
 
     model.eval()
@@ -223,13 +239,14 @@ def train(
         print("Evaluation Finished")
     if writer is not None:
         writer.close()
+    stop_epoch = max_epoch - 1 if early_stop_epoch is None else early_stop_epoch
     # Save Last Model
     if save_mode != en.SavingMode.none_save:
-        save_params = {"current_epoch": max_epoch, "current_acc": vacc_avg.avg, "current_loss": vloss_avg}
+        save_params = {"current_epoch": stop_epoch, "current_acc": vacc_avg.avg, "current_loss": vloss_avg}
         ml.save_model(model, optimizer, scheduler, hparams, save_params)
     if interactive:
-        print("Saved model on epoch %d at the end ot training" % max_epoch)
-        print("Whole training took %f.2 s", time.perf_counter() - train_time)
+        print("Saved model on epoch %d at the end ot training" % stop_epoch)
+        print(f"Whole training took {time.perf_counter() - train_time:.2f}s")
         print("Bye")
 
     return vloss_avg, (vacc_avg, vacc2_avg, vacc3_avg)

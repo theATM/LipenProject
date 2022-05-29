@@ -13,7 +13,7 @@ testset_dir = test
 label_filename = UniformDatasetLabel.csv
 normalization_filename = UniformDatasetMean.pickle
 #batch sizes
-train_batch_size = 8
+train_batch_size = 64
 val_batch_size = 1
 test_batch_size = 1
 #Load Params
@@ -27,6 +27,7 @@ weight_decay = 7e-1
 frozen_initial_layers = 0
 scheduler_list= [50,100,150,200]
 scheduler_gamma=0.75
+early_stop_evals = 3
 grad_per_batch = 8
 single_batch_test= False
 max_epoch = 400

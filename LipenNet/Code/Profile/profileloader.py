@@ -38,6 +38,7 @@ class Hparams(TypedDict):
     frozen_initial_layers: int | None
     scheduler_list: list[int] | None
     scheduler_gamma : float | None
+    early_stop_evals: int | None
     grad_per_batch : int | None
     single_batch_test: bool | None
     max_epoch: int | None
@@ -173,6 +174,7 @@ __hparams  : Hparams = \
     "frozen_initial_layers": None,
     "scheduler_list" : None,
     "scheduler_gamma" : None,
+    "early_stop_evals" : None,
     "grad_per_batch" : None,
     "single_batch_test": None,
     "max_epoch":None,

@@ -26,7 +26,7 @@ def main():
     criterion = ml.pickCriterion(hparams)
     if hparams['load_model']:
         ml.load_model_test(model, val_device, hparams)
-    writer = SummaryWriter("Logs/Runs/" + "TEST_" + ml.getModelName(hparams, withdataset=True))
+    writer = SummaryWriter("Logs/Runs/Test/" + ml.getModelName(hparams, withdataset=True))
 
     # Evaluate on test
     print("\nEvaluation Started")
