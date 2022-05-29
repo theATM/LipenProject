@@ -68,6 +68,8 @@ def main():
         train_loader = [next(iter(train_loader))]
         print("Single Batch Test Chosen")
     single_batch_test=hparams['single_batch_test']
+    #Visualize model on graph
+    writer.add_graph(model,torch.zeros([hparams['train_batch_size']] + train_loader.dataset.image_dims).to(train_device))
     #Run training
     results = train(hparams=hparams,train_device=train_device,
                     train_loader=train_loader,val_loader=val_loader,
