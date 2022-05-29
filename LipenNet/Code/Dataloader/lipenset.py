@@ -16,6 +16,7 @@ class Lipenset(Dataset):
         self.dataset_path = hparams['data_dir'] + "/" + hparams['dataset_dir']
         self.dataset_type = dataset_type
         self.shuffle = shuffle
+        self.image_dims = [3,244,244]
 
         set_dir = ""
         match self.dataset_type:
