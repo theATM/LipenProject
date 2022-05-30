@@ -37,6 +37,7 @@ class ModelType(Enum):
     Resnet18 : str = "Resnet18"
     Alexnet : str = "Alexnet"
     ConvNext: str = "ConvNext"
+    Squeezenet: str = "Squeezenet"
 
 
 class AugmentationType(Enum):

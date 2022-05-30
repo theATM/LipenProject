@@ -1,17 +1,18 @@
-import torch
 import sys
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sn
+import torch
 from sklearn.metrics import confusion_matrix, roc_auc_score, RocCurveDisplay
 from torch.nn.functional import softmax
 from torch.utils.tensorboard import SummaryWriter
 
-import Code.Dataloader.lipenset as dl
-import Code.Profile.profileloader as pl
 import Code.Architecture.modelloader as ml
+import Code.Dataloader.lipenset as dl
 import Code.Functional.utilities as ut
+import Code.Profile.profileloader as pl
 import Code.Protocol.enums as en
 
 
@@ -48,14 +49,14 @@ def main():
     model.eval()
     loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
         evaluate(model, criterion, dataloader, val_device)
-    print('Evaluation Loss on all %s images, %2.2f' % (val_type.value , loss_val.avg.item()))
-    print('Evaluation Accuracy on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
-    print('Evaluation TOP 2 Accuracy on all %s images, %2.2f' %  (val_type.value ,acc2_val.avg.item()))
-    print('Evaluation TOP 3 Accuracy on all %s images, %2.2f' % (val_type.value , acc3_val.avg.item()))
-    print('Evaluation Precision on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
-    print('Evaluation Recall on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
-    print('Evaluation F1 Score on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
-    print('Evaluation average AUC-ROC on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
+    print('Evaluation Loss on all %s images, %2.2f' % (val_type.value, loss_val.avg.item()))
+    print('Evaluation Accuracy on all %s images, %2.2f' % (val_type.value, acc_val.avg.item()))
+    print('Evaluation TOP 2 Accuracy on all %s images, %2.2f' % (val_type.value, acc2_val.avg.item()))
+    print('Evaluation TOP 3 Accuracy on all %s images, %2.2f' % (val_type.value, acc3_val.avg.item()))
+    print('Evaluation Precision on all %s images, %2.2f' % (val_type.value, precision))
+    print('Evaluation Recall on all %s images, %2.2f' % (val_type.value, recall))
+    print('Evaluation F1 Score on all %s images, %2.2f' % (val_type.value, f1_score))
+    print('Evaluation average AUC-ROC on all %s images, %2.2f' % (val_type.value, roc_auc_avg))
     print("Evaluation Finished")
     if writer is not None:
         writer.add_text("Loss/" + val_type.value, str(loss_val.avg.item()))

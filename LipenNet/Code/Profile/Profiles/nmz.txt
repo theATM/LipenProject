@@ -4,14 +4,14 @@
 data_dir = Data
 
 #Main Dataset Directory
-dataset_dir = UnaugDataset
-dataset_name = UnaugDataset
+dataset_dir = UniformDataset
+dataset_name = UniformDataset
 #Sub sets directory names
 trainset_dir = train
 valset_dir = eval
 testset_dir = test
-label_filename = UnaugDatasetLabel.csv
-normalization_filename = UnaugDatasetMean.pickle
+label_filename = UniformDatasetLabel.csv
+normalization_filename = UniformDatasetMean.pickle
 #batch sizes
 train_batch_size = 4
 val_batch_size = 1
@@ -32,13 +32,13 @@ grad_per_batch = 1
 single_batch_test= False
 max_epoch = 200
 train_device = Cuda
-model = ConvNext
+model = Resnet18
 optimizer = AdamW
 criterion = CrossEntropy
-reduction_mode= mean
+reduction_mode= none
 clean_class_weights= [1,1,1,1,1,1]
 uniform_class_weights= [1,1,1,1,1,1]
-unaug_class_weights= [1,1,1,1,1,0.5]
+unaug_class_weights= [1,1,1,1,1,1]
 merged_class_weights= [1,1,1,1,1,1]
 meraug_class_weights= [1,1,1,1,1,1]
 uniform20_class_weights=[1,1,1,1,1,1]
@@ -54,7 +54,7 @@ val_criterion = CrossEntropy
 
 #Augmentation Parameters
 augmentation_type = Normalize
-augmentation_count = 10
+augmentation_count = 6
 resize_size = (244,244)
 vertical_flip_prob = 0.5
 horizontal_flip_prob = 0.5
