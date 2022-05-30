@@ -109,6 +109,12 @@ class LipenTransform:
                     T.ToTensor(),
                     T.Normalize(mean=mean,std=std)
                 ])
+        elif augmentation_type == en.AugmentationType.Normrot:
+            self.transform = T.Compose([
+                T.ToTensor(),
+                RandomRotationTransform(hparams['rotate_angles']),
+                T.Normalize(mean=mean, std=std)
+            ])
         elif augmentation_type == en.AugmentationType.Without:
             self.transform = T.Compose([
                     T.ToTensor(),
