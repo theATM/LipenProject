@@ -59,7 +59,7 @@ def main():
     # Load model if required
     if hparams['load_model']:
         load_params = ml.load_model(model, optimizer, scheduler, train_device, hparams)
-        if "min_epoch" in load_params:
+        if "current_epoch" in load_params:
             min_epoch = load_params["current_epoch"]
 
     # Alternative single batch test (to check if network will over fit)

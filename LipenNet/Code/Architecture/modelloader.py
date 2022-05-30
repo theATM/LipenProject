@@ -39,6 +39,10 @@ def pickModel(hparams: Hparams):
         case en.ModelType.ConvNext:
             model = torchvision.models.convnext_small(pretrained=True)
             model.classifier.append(torch.nn.Linear(1000,6))
+        case en.ModelType.ConvNextBare:
+            model = torchvision.models.convnext_small(pretrained=False)
+            model.classifier.append(torch.nn.Linear(1000,6))
+
 
     return model
 
@@ -48,7 +52,7 @@ def load_model(model, optimizer, scheduler, load_device, hparams: Hparams):
     # Load File:
     model_load_dict = torch.load(load_path, map_location=load_device)
     model_states = model_load_dict["model_states"]
-    optim_states = model_load_dict["optim_states"]
+    optim_states = model_load_dict["optimizer_states"]
     schedule_states = model_load_dict["scheduler_states"]
     load_params = model_load_dict["save_params"]
 

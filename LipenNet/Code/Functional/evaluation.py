@@ -13,7 +13,9 @@ import Code.Profile.profileloader as pl
 import Code.Architecture.modelloader as ml
 import Code.Functional.utilities as ut
 import Code.Protocol.enums as en
-
+from torch.utils.data import Dataset, DataLoader
+from PIL import Image
+import torchvision
 
 def main():
     if len(sys.argv) < 4:
@@ -47,7 +49,8 @@ def main():
     print("\nEvaluation Started")
     model.eval()
     loss_val, (acc_val, acc2_val, acc3_val), precision, recall, f1_score, conf_matrix, roc_auc_avg, roc_fig = \
-        evaluate(model, criterion, dataloader, val_device)
+        evaluate(model, criterion, dataloader, val_device,writer)
+    logWrongImages(model,dataloader,val_device,writer)
     print('Evaluation Loss on all %s images, %2.2f' % (val_type.value , loss_val.avg.item()))
     print('Evaluation Accuracy on all %s images, %2.2f' % (val_type.value ,acc_val.avg.item()))
     print('Evaluation TOP 2 Accuracy on all %s images, %2.2f' %  (val_type.value ,acc2_val.avg.item()))
@@ -73,7 +76,7 @@ def main():
         writer.close()
 
 
-def evaluate(model, criterion, data_loader, val_device):
+def evaluate(model, criterion, data_loader, val_device, writer :SummaryWriter | None = None):
     model.eval()
     acc_avg = ut.AverageMeter('Accuracy', ':6.2f')
     loss_avg = ut.AverageMeter('Loss', ':6.2f')
@@ -113,6 +116,7 @@ def evaluate(model, criterion, data_loader, val_device):
             _, pred = outputs.topk(1, 1, True, True)
             y_pred_all += pred.tolist()
             y_true_all += labels.tolist()
+
 
     if not sys.gettrace():
         conf_matrix = confusion_matrix(y_true_all, y_pred_all)
@@ -182,6 +186,41 @@ def accuracy(outputs, labels , topk=(1,)):
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
 
+
+def logWrongImages(model, data_loader : DataLoader,val_device , writer :SummaryWriter):
+    model.eval()
+    wrongs = 0
+    goods = 0
+    for image_inf in data_loader.dataset.images:
+        imagep = Image.open(image_inf[0])
+
+        image = torchvision.transforms.functional.pil_to_tensor(imagep).to(val_device)
+        imagein = data_loader.dataset.transform_tool.transform(imagep).to(val_device)
+        with torch.no_grad():
+            out = model(torch.unsqueeze(imagein,0).float())
+            _, pred = out.topk(1, 1, True, True)
+            pred = pred.t()
+            label = image_inf[1]
+            weight = image_inf[2]
+            if pred.item() != int(label):
+                 # wrong prediction
+                 all_preds = str(list(np.around(softmax(out.detach(),1).to("cpu").numpy()[0] , 4)))
+                 title = "Class = " + str(list(en.labels.keys())[int(label)]) + " / Pred = " + str(list(en.labels.keys())[pred.item()]) +"/Weight = " + weight  + "/ All_preds = " + all_preds + " / Nr = " + str(wrongs) + "Image: " + image_inf[0]
+                 writer.add_image(title, image, 0)
+                 wrongs += 1
+            else:
+                goods += 1
+        imagep.close()
+    print("Wrong = ", wrongs)
+    print("Good =", goods)
+
+    ##
+   # if writer is not None:
+   #     for i, pred in enumerate(pred.tolist()):
+   #         if pred != labels.tolist()[i]:
+   #             # wrong prediction
+   #             title = "Images/ Class = " + str(labels.tolist()[i]) + "/ Pred = " + str(pred[0])
+   #             writer.add_image(title, inputs[i], 0)
 
 # def precision_micro(outputs, labels):
 #     with torch.no_grad():
