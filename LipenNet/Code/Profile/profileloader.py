@@ -53,7 +53,7 @@ class Hparams(TypedDict):
     unaug_class_weights: list[float] | None
     merged_class_weights: list[float] | None
     meraug_class_weights: list[float] | None
-    uniform20_class_weights: list[float] | None
+    unaug20_class_weights: list[float] | None
 
     # Weights change params
     weights_delta: float | None
@@ -192,7 +192,7 @@ __hparams  : Hparams = \
     "unaug_class_weights": None,
     "merged_class_weights": None,
     "meraug_class_weights": None,
-    "uniform20_class_weights":None,
+    "unaug20_class_weights":None,
 
     # Weights change params
     "weights_delta": None,

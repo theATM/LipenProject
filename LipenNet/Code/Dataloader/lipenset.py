@@ -89,7 +89,7 @@ class Lipenset(Dataset):
         np.random.shuffle(self.images)
 
 
-def loadData(hparams : Hparams, load_train:bool = False,load_val:bool= False,load_test:bool= False):
+def loadData(hparams : Hparams, load_train:bool = False,load_val:bool = False,load_test:bool= False):
     trainset = None
     valset = None
     testset = None

@@ -8,7 +8,7 @@ class DatasetName(Enum):
     UnaugDataset: str = "unaug"
     MergedDataset: str = "merged"
     MeraugDataset: str = "meraug"
-    Uniform20Dataset: str = "uniform20"
+    Unaug20Dataset: str = "unaug20"
 
 
 class DatasetType(Enum):
@@ -37,6 +37,7 @@ class ModelType(Enum):
     Resnet18 : str = "Resnet18"
     Alexnet : str = "Alexnet"
     ConvNext: str = "ConvNext"
+    ConvNextBare :str = "ConvNextBare"
 
 
 class AugmentationType(Enum):
@@ -45,6 +46,7 @@ class AugmentationType(Enum):
     Online: str = "Online"
     Offline: str = "Offline"
     Normalize: str = "Normalize"
+    Normrot : str = "Normrot"
 
 
 class Device(Enum):
@@ -71,5 +73,23 @@ class ValType(Enum):
     test = 'test'
 
 
+labels = dict(
+     triangle = 0,
+     ruler    = 1,
+     gum      = 2,
+     pencil   = 3,
+     pen      = 4,
+     none     = 5,
+     wrong    = 6
+)
+
+extralabels = dict(
+    broken = 1,
+    blurred = 2,
+    dark = 4,
+    lamp = 8,
+    hard = 16,
+    normal=0
+)
 
 
