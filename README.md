@@ -43,7 +43,7 @@ Different optimisation techinques such as early stopping, layer freezing and har
 ## Further Work
 
 This project has been used as a basis for the model optimisation study.
-In  <a href="https://github.com/Nikodemmn1/LipenOptimization"> (THIS)</a> project it has been shown that this model can be 80% pruned (reduced) without a significant drop in the model accuracy.
+In  <a href="https://github.com/Nikodemmn1/LipenOptimization"> (THIS)</a> project it has been shown that model can be 80% pruned (reduced) without a significant drop in the model accuracy.
 
 
 
